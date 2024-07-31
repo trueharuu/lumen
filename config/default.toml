@@ -1,4 +1,0 @@
-prefixes = ['&']
-allow_mention_prefix = true
-
-[levels]
