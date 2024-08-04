@@ -4,7 +4,7 @@ import { command } from '../parser/command.js';
 export const LevelCommand = command({
   parsers: { user: Optional(UserArg) },
   meta: {
-    name: 'level'
+    name: 'level',
   },
   async execute(ctx, args) {
     const target = args.user || ctx.user();
@@ -13,7 +13,7 @@ export const LevelCommand = command({
       target.id === ctx.userId()
         ? ctx.messages.utility.level_self
         : ctx.messages.utility.level_other,
-      { level: level.toString(), target_id: target.id }
+      { level: level.toString(), target_id: target.id },
     ));
-  }
+  },
 });

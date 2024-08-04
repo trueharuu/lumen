@@ -1,9 +1,15 @@
 import {
+  ApplicationCommandOptionData,
+  ApplicationCommandOptionType,
+  ApplicationCommandType,
   AttachmentPayload,
+  ChatInputApplicationCommandData,
+  ChatInputCommandInteraction,
   Client,
   ClientEvents,
   IntentsBitField,
-  Message
+  Interaction,
+  Message,
 } from 'discord.js';
 
 import { ArgTy } from './parser/argument.js';
@@ -20,7 +26,6 @@ import { STRINGS } from './localization/strings.js';
 
 export class Lumen {
   public commands: Array<Command<ArgTy>> = [];
-  private state: number = Date.now();
   public readonly client: Client;
   private readonly config_dir: string = 'config';
   private readonly data_dir: string = 'data';
@@ -30,9 +35,9 @@ export class Lumen {
         IntentsBitField.Flags.MessageContent,
         IntentsBitField.Flags.GuildMessages,
         IntentsBitField.Flags.Guilds,
-        IntentsBitField.Flags.GuildMembers
+        IntentsBitField.Flags.GuildMembers,
       ],
-      allowedMentions: { repliedUser: false, roles: [], users: [] }
+      allowedMentions: { repliedUser: false, roles: [], users: [] },
     });
   }
 
@@ -42,7 +47,7 @@ export class Lumen {
 
   public defaultConfig(): GuildConfig {
     return parse(
-      fs.readFileSync(`${this.config_dir}/default.toml`, 'utf-8')
+      fs.readFileSync(`${this.config_dir}/default.toml`, 'utf-8'),
     ) as never;
   }
 
@@ -52,8 +57,8 @@ export class Lumen {
         {},
         this.defaultConfig(),
         parse(
-          fs.readFileSync(`${this.config_dir}/${guild_id}.toml`, 'utf-8')
-        ) as never
+          fs.readFileSync(`${this.config_dir}/${guild_id}.toml`, 'utf-8'),
+        ) as never,
       ) as never;
     } catch {
       return this.defaultConfig();
@@ -63,7 +68,7 @@ export class Lumen {
   public getGuildData(guild_id: string): GuildData {
     try {
       return parse(
-        fs.readFileSync(`${this.data_dir}/${guild_id}.toml`, 'utf-8')
+        fs.readFileSync(`${this.data_dir}/${guild_id}.toml`, 'utf-8'),
       ) as never;
     } catch {
       return this.defaultGuildData(guild_id);
@@ -73,7 +78,7 @@ export class Lumen {
   public setGuildData(guild_id: string, data: GuildData): void {
     fs.writeFileSync(
       `${this.data_dir}/${guild_id}.toml`,
-      stringify(data as never)
+      stringify(data as never),
     );
   }
 
@@ -125,8 +130,8 @@ export class Lumen {
   }
 
   public parseMessagePrefix(message: Message<true>): [string, string] | null {
-    const found = this.getPrefixes(message.guildId).find((x) =>
-      message.content.startsWith(x)
+    const found = this.getPrefixes(message.guildId).find(x =>
+      message.content.startsWith(x),
     );
     if (found !== undefined) {
       return [found, message.content.slice(found.length).trim()];
@@ -136,13 +141,60 @@ export class Lumen {
   }
 
   public async start() {
-    console.log('starting');
     this.client.on('messageCreate', (c) => {
       void this.onMessageCreate(c);
     });
-    this.client.on('ready', (c) => this.onReady(c));
-    this.state = Date.now();
+    this.client.on('interactionCreate', (c) => {
+      void this.onInteractionCreate(c);
+    });
+    this.client.on('ready', c => this.onReady(c));
     await this.client.login(this.config.token);
+
+    for (const [id] of await this.client.guilds.fetch()) {
+      const cfg = this.getConfig(id);
+      const guild = this.client.guilds.cache.get(id)!;
+      if (cfg.plugins.commands.enabled && cfg.plugins.commands.interactions) {
+        const list: Array<ChatInputApplicationCommandData> = [];
+        const groups: Map<string, Array<Command<ArgTy>>> = new Map();
+        for (const cmd of this.commands) {
+          if (!(cmd.register || (() => {}))(this, cfg)) {
+            continue;
+          }
+          const ls = cmd.meta.name.split(' ');
+          if (ls.length === 2) {
+            const [group] = ls;
+            groups.set(group, [...(groups.get(group) || []), cmd]);
+          } else {
+            list.push({
+              name: cmd.meta.name,
+              type: ApplicationCommandType.ChatInput,
+              description: cmd.meta.description || '...',
+              options: this.makeOptions(cmd),
+            });
+          }
+        }
+
+        for (const [group, vs] of groups) {
+          list.push({
+            name: group,
+            type: ApplicationCommandType.ChatInput,
+            description: '...',
+            options: vs.map(x => ({
+              name: x.meta.name.split(' ')[1],
+              description: x.meta.description || '...',
+              type: ApplicationCommandOptionType.Subcommand,
+              options: this.makeOptions(x),
+            })) as ReadonlyArray<ApplicationCommandOptionData>,
+          });
+        }
+
+        void await guild.commands.set(list);
+      }
+    }
+  }
+
+  public makeOptions<T extends ArgTy>(command: Command<T>): Array<ApplicationCommandOptionData> {
+    return Object.entries(command.parsers).map(([name, arg]) => arg.to_option(name, '...'));
   }
 
   public commandMap(): Array<[string, Command<ArgTy>]> {
@@ -163,28 +215,28 @@ export class Lumen {
 
     if (message.guild.ownerId === message.member!.id) {
       if (
-        message.content === `${this.config.config_prefix}config upload` &&
-        message.attachments.size > 0
+        message.content === `${this.config.config_prefix}config upload`
+        && message.attachments.size > 0
       ) {
         const req = await fetch(message.attachments.first()!.url);
         const data = await req.text();
         const uploaded = parse(data) as never as GuildConfig;
         await fs.promises.writeFile(
           `${this.config_dir}/${message.guild.id}.toml`,
-          data
+          data,
         );
 
         return void (await message.reply(
           fmt(STRINGS.config.uploaded, {
-            prefixes: uploaded.prefixes.map((x) => `\`${x}\``).join(', ')
-          })
+            prefixes: uploaded.prefixes.map(x => `\`${x}\``).join(', '),
+          }),
         ));
       }
 
       if (message.content === `${this.config.config_prefix}config reset`) {
         await fs.promises.rm(`${this.config_dir}/${message.guild.id}.toml`);
         return void (await message.reply(
-          fmt(STRINGS.config.reset, {})
+          fmt(STRINGS.config.reset, {}),
         ));
       }
 
@@ -192,29 +244,29 @@ export class Lumen {
         try {
           const data = await fs.promises.readFile(
             `${this.config_dir}/${message.guild.id}.toml`,
-            'utf-8'
+            'utf-8',
           );
           return void (await message.reply({
             files: [
               {
                 attachment: Buffer.from(data, 'utf-8'),
-                name: 'config.toml'
-              } as AttachmentPayload
-            ]
+                name: 'config.toml',
+              } as AttachmentPayload,
+            ],
           }));
         } catch {
           const data = await fs.promises.readFile(
             `${this.config_dir}/default.toml`,
-            'utf-8'
+            'utf-8',
           );
           return void (await message.reply({
             content: fmt(STRINGS.config.no_config, {}),
             files: [
               {
                 attachment: Buffer.from(data, 'utf-8'),
-                name: 'config_default.toml'
-              } as AttachmentPayload
-            ]
+                name: 'config_default.toml',
+              } as AttachmentPayload,
+            ],
           }));
         }
       }
@@ -225,13 +277,22 @@ export class Lumen {
       return;
     }
 
+    const cfg = this.getConfig(message.guildId);
+    if (!cfg.plugins.commands.enabled || !cfg.plugins.commands.prefixed) {
+      return;
+    }
+
     const [, vecs] = vs;
+    void await this.takeCommand(vecs, message, cfg);
+  }
+
+  public async takeCommand(vecs: string, item: Message | ChatInputCommandInteraction, cfg: GuildConfig) {
     for (const [name, command] of this.commandMap()) {
-      const ctxt = new Ctxt(this, message);
+      const ctxt = new Ctxt(this, item);
       if (vecs.startsWith(name)) {
         const argl = vecs.slice(name.length).trim();
         try {
-          const should = await (command.register || (async () => true))(ctxt);
+          const should = await (command.register || (async () => true))(this, cfg);
           if (!should) {
             return;
           }
@@ -242,13 +303,13 @@ export class Lumen {
         try {
           const check = await (command.check || (async () => true))(ctxt);
           if (!check) {
-            return await message.reply(
-              fmt(STRINGS.commands.not_allowed, {})
+            return await ctxt.reply(
+              fmt(STRINGS.commands.not_allowed, {}),
             );
           }
         } catch (e) {
-          return await message.reply(
-            fmt(STRINGS.commands.preprocessing_error, {message: (e as Error).message || (e as string)})
+          return await ctxt.reply(
+            fmt(STRINGS.commands.preprocessing_error, { message: (e as Error).message || (e as string) }),
           );
         }
 
@@ -260,15 +321,15 @@ export class Lumen {
             try {
               argv.push([k, (await parser.parse(pctx))] as never);
             } catch (e) {
-              return await message.reply(
-                fmt(STRINGS.commands.parsing_error, {message: (e as Error).message || (e as string)})
+              return await ctxt.reply(
+                fmt(STRINGS.commands.parsing_error, { message: (e as Error).message || (e as string) }),
               );
             }
           }
           await command.execute(ctxt, Object.fromEntries(argv));
         } catch (e) {
-          return await message.reply(
-            fmt(STRINGS.commands.execution_error, { message: (e as Error).message || (e as string) })
+          return await ctxt.reply(
+            fmt(STRINGS.commands.execution_error, { message: (e as Error).message || (e as string) }),
           );
         }
         break;
@@ -280,13 +341,31 @@ export class Lumen {
     void client;
   }
 
+  public async onInteractionCreate(c: Interaction) {
+    if (!c.isChatInputCommand()) {
+      return;
+    }
+
+    const sub = c.options.getSubcommand(false);
+    const name = sub ? `${c.commandName} ${sub}` : c.commandName;
+    const [, cmd] = this.commandMap().find(([n]) => n === name)!;
+    const argv: Record<string, unknown> = {};
+    const ctxt = new Ctxt(this, c);
+
+    for (const [key, parser] of Object.entries(cmd.parsers)) {
+      argv[key] = await parser.parse_option(ctxt, key);
+    }
+
+    void await cmd.execute(ctxt, argv);
+  }
+
   public register<T extends ArgTy>(command: Command<T>) {
     this.commands.push(command);
   }
 
   public event<Event extends keyof ClientEvents>(
     event: Event,
-    listener: (...args: ClientEvents[Event]) => unknown
+    listener: (...args: ClientEvents[Event]) => unknown,
   ) {
     this.client.on(event, listener);
   }

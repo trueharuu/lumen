@@ -10,40 +10,11 @@
     "sourceType": "module",
     "project": true
   },
-  "extends": ["plugin:@typescript-eslint/recommended-type-checked"],
+  "extends": ["plugin:@typescript-eslint/recommended-type-checked", "plugin:@stylistic/recommended-extends"],
   "rules": {
-    "@stylistic/array-bracket-newline": ["off"],
-    "@stylistic/array-bracket-spacing": ["warn", "never"],
-    "@stylistic/array-element-newline": ["off"],
-    "@stylistic/arrow-parens": ["warn", "always"],
-    "@stylistic/arrow-spacing": ["warn", { "before": true, "after": true }],
-    "@stylistic/block-spacing": ["warn", "always"],
-    "@stylistic/brace-style": ["warn", "1tbs"],
-    "@stylistic/comma-dangle": [
-      "warn",
-      {
-        "arrays": "never",
-        "objects": "never",
-        "imports": "never",
-        "exports": "never",
-        "functions": "never"
-      }
-    ],
-    "@stylistic/comma-spacing": ["warn", { "before": false, "after": true }],
-    "@stylistic/generator-star-spacing": ["warn", "after"],
-    "@stylistic/indent": ["warn", 2],
-    "@stylistic/key-spacing": [
-      "warn",
-      {
-        "beforeColon": false,
-        "afterColon": true,
-        "mode": "strict"
-      }
-    ],
-    "@stylistic/keyword-spacing": ["warn", { "before": true, "after": true }],
-    "@stylistic/line-comment-position": ["warn"],
-    "@stylistic/max-len": ["warn", { "code": 120 }],
+    "@stylistic/semi": ["warn", "always"],
     "@stylistic/quotes": ["warn", "single"],
+    "@stylistic/brace-style": ["warn", "1tbs"],
 
     "@typescript-eslint/unbound-method": "off",
     "@typescript-eslint/require-await": "off"

@@ -7,6 +7,6 @@ export function fmt<T extends string>(t: T, inject: Inject<T>): string {
 export type Inject<T extends string> =
   T extends `${string}{${infer K}}${infer R}`
     ? {
-      [P in K | keyof Inject<R>]: string;
-    }
+        [P in K | keyof Inject<R>]: string;
+      }
     : object;
