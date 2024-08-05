@@ -1,6 +1,5 @@
 package-lock.json
-node_modules/**
+node_modules
 config.toml
-dist/
-config/**
-data/**
+dist
+storage
