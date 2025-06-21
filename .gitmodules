@@ -1,0 +1,6 @@
+[submodule "gluingfumens"]
+	path = gluingfumens
+	url = https://github.com/marfung37/gluingfumens
+[submodule "src/gluingfumens"]
+	path = src/gluingfumens
+	url = https://github.com/marfung37/gluingfumens
