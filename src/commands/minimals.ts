@@ -2,7 +2,7 @@ import { Command } from "@sapphire/framework";
 import { InteractionContextType } from "discord.js";
 
 import { clean, kick_table, respond_lengthy, sfinder } from "../util";
-import { p_path } from "../parser";
+import { p_minimals, p_path } from "../parser";
 import {
   a_clear,
   a_drop_type,
@@ -12,7 +12,7 @@ import {
   a_tetfu,
 } from "../args";
 
-export class PathCommand extends Command {
+export class MinimalsCommand extends Command {
   public constructor(context: Command.LoaderContext, options: Command.Options) {
     super(context, { ...options });
   }
@@ -22,8 +22,10 @@ export class PathCommand extends Command {
   ): Promise<void> {
     registry.registerChatInputCommand((builder) =>
       builder
-        .setName("path")
-        .setDescription("Runs sfinder `path`.")
+        .setName("minimals")
+        .setDescription(
+          "Runs sfinder `path`, but only reporting minimal solutions."
+        )
         .addStringOption((c) => a_tetfu(c))
         .addStringOption((c) => a_pattern(c))
         .addStringOption((c) => a_hold(c))
@@ -47,18 +49,18 @@ export class PathCommand extends Command {
     const drop_type =
       interaction.options.getString("drop_type", false) ?? "softdrop";
 
-    const command = `path -t ${tetfu} -p ${pattern} -H ${hold} -d ${drop_type} -K "${kicks}" -c ${clear}`;
+    const command = `path -t ${tetfu} -p ${pattern} -H ${hold} -d ${drop_type} -K "${kicks}" -c ${clear} -f csv -k pattern`;
 
     const result = sfinder(interaction, command);
 
     if (result.ok) {
-      const t = p_path(interaction);
+      const t = await p_minimals(interaction);
       await interaction.editReply(respond_lengthy("", t, false));
     } else {
       await interaction.editReply(respond_lengthy(":warning:", result.text));
     }
 
-    clean(interaction.user.id, interaction.id);
+    // clean(interaction.user.id, interaction.id);
     // console.log(z);
   }
 }

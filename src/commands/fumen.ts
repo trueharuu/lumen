@@ -7,6 +7,8 @@ import {
 import { ChatInputCommandInteraction } from "discord.js";
 import { a_tetfu } from "../args";
 import { fumenutil, respond_lengthy } from "../util";
+import glueFumen from "../gluingfumens/src/lib/glueFumen";
+import { assemble } from "../ext/unglue";
 
 export class FumenCommand extends Command {
   public constructor(context: Command.LoaderContext, options: Command.Options) {
@@ -44,8 +46,17 @@ export class FumenCommand extends Command {
     if (scm === "glue") {
       const tetfu = interaction.options.getString("tetfu", true);
       await interaction.editReply(
-        respond_lengthy("", fumenutil(`glue ${tetfu}`), false)
+        respond_lengthy("", glueFumen(tetfu).join("\n"), false)
       );
+      return;
+    }
+
+    if (scm === "unglue") {
+      const tetfu = interaction.options.getString("tetfu", true);
+      await interaction.editReply(
+        respond_lengthy("", assemble(tetfu.split(" ")).join("\n"), false)
+      );
+      return;
     }
   }
 }

@@ -8,7 +8,7 @@ import {
   respond_lengthy,
   sfinder,
 } from "../util";
-import { p_cover } from "../parser";
+import { p_cover, p_cover_minimals } from "../parser";
 import {
   a_clear,
   a_cover_mode,
@@ -19,7 +19,7 @@ import {
   a_tetfu,
 } from "../args";
 
-export class CoverCommand extends Command {
+export class CoverMinimalCommand extends Command {
   public constructor(context: Command.LoaderContext, options: Command.Options) {
     super(context, { ...options });
   }
@@ -29,7 +29,7 @@ export class CoverCommand extends Command {
   ): Promise<void> {
     registry.registerChatInputCommand((builder) =>
       builder
-        .setName("cover")
+        .setName("cover_minimal")
         .setDescription("Runs sfinder `cover`.")
         .addStringOption((c) => a_tetfu(c))
         .addStringOption((c) => a_pattern(c))
@@ -97,7 +97,7 @@ export class CoverCommand extends Command {
     const result = sfinder(interaction, command);
 
     if (result.ok) {
-      const t = p_cover(interaction);
+      const t = p_cover_minimals(interaction);
       interaction.editReply(respond_lengthy("", t, false));
     } else {
       interaction.editReply(respond_lengthy(":warning:", result.text));

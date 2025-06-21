@@ -76,10 +76,10 @@ export class SetupCommand extends Command {
 
     const command = `setup -t ${tetfu} -p ${pattern} ${fill ? `-f ${fill}` : ""} ${margin ? `-m ${margin}` : ""} ${free ? `-F ${free}` : ""} ${clear ? `-l ${clear}` : ""} -H ${hold} -K ${kicks} -d ${drop_type} -e ${exclude} ${n ? `-np ${n}` : ""}`;
 
-    const result = sfinder(command, interaction.user.id, interaction.id);
+    const result = sfinder(interaction, command);
 
     if (result.ok) {
-      const t = p_setup(interaction.user.id, interaction.id);
+      const t = p_setup(interaction);
       await interaction.editReply(respond_lengthy("", t, false));
     } else {
       await interaction.editReply(respond_lengthy(":warning:", result.text));

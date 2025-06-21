@@ -27,7 +27,7 @@ export class SfinderCommand extends Command {
   ) {
     await interaction.deferReply();
     const t = interaction.options.getString("arg");
-    const z = sfinder(t || "", interaction.user.id, interaction.id);
+    const z = sfinder(interaction, t || "");
     await interaction.editReply(
       respond_lengthy(z.ok ? "" : ":warning:", z.text)
     );

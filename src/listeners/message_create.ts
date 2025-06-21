@@ -23,6 +23,7 @@ export class MessageCreateListener extends Listener<Events.MessageCreate> {
       !no_autorender.includes(message.author.id) &&
       !message.content.includes("\u{E007E}")
     ) {
+      console.log(message.content);
       const z = await render(message.content, message.reply.bind(message));
       if (z) {
         state.responded_messages.set(message.id, z.id);

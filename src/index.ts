@@ -21,6 +21,7 @@ export const client = new SapphireClient({
   logger: { instance: new Tracing(LogLevel.Info) },
   defaultPrefix: null,
   disableMentionPrefix: true,
+  // loadMessageCommandListeners: true,
 });
 export const rest = new REST().setToken(process.env.TOKEN!);
 

@@ -49,10 +49,10 @@ export class PercentCommand extends Command {
 
     const command = `percent -t ${tetfu} -p ${pattern} -H ${hold} -d ${drop_type} -K "${kicks}" -c ${clear} -td 0 -fc 0`;
 
-    const result = sfinder(command, interaction.user.id, interaction.id);
+    const result = sfinder(interaction, command);
 
     if (result.ok) {
-      const t = p_percent(interaction.user.id, interaction.id);
+      const t = p_percent(interaction);
       await interaction.editReply(respond_lengthy("", t, false));
     } else {
       await interaction.editReply(respond_lengthy(":warning:", result.text));

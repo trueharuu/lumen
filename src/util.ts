@@ -1,8 +1,10 @@
 import {
   APIApplicationCommandOptionChoice,
+  Interaction,
   InteractionEditReplyOptions,
   InteractionReplyOptions,
 } from "discord.js";
+import { execSync, SpawnSyncReturns } from "node:child_process";
 
 export function respond_lengthy(
   start: string,
@@ -19,7 +21,6 @@ export function respond_lengthy(
   return { content: `${start} ${cb ? "```\n" : ""}${t}${cb ? "\n```" : ""}` };
 }
 
-import * as child_process from "node:child_process";
 import * as fs from "node:fs";
 import path from "node:path";
 
@@ -41,24 +42,36 @@ export interface SfinderResult {
   ok: boolean;
   text: string;
 }
-export function sfinder(
-  command: string,
-  uid: string,
-  iid: string
-): SfinderResult {
-  const dir = instance(uid, iid);
-  fs.mkdirSync(dir, { recursive: true });
 
-  console.log(dir);
-  console.log(command);
+export function exec(i: Interaction, t: string) {
+  const ui = instance(i.user.id, i.id);
+  fs.mkdirSync(ui, { recursive: true });
+  fs.writeFileSync(ui + "/command", serialized(i));
+  return execSync(t, { encoding: "utf-8", cwd: ui });
+}
+
+export function serialized(i: Interaction) {
+  if (i.isChatInputCommand()) {
+    const opts = i.options.data
+      .toSorted((a, b) => a.name.localeCompare(b.name))
+      .map((x) => `[${x.name}: ${x.value?.toString()}]`)
+      .join(" ");
+    return `/${i.commandName} ${opts}`;
+  }
+
+  if (i.isContextMenuCommand()) {
+    return `Context Menu > ${i.commandName}`;
+  }
+
+  return i.id;
+}
+
+export function sfinder(i: Interaction, command: string): SfinderResult {
   try {
-    const result = child_process.execSync(
-      `java -jar ${lib_root()}\\sfinder.jar ${command}`,
-      { encoding: "utf-8", cwd: dir }
-    );
+    const result = exec(i, `java -jar ${lib_root()}\\sfinder.jar ${command}`);
     return { ok: true, text: result };
   } catch (e) {
-    ty_assert<Error & child_process.SpawnSyncReturns<string>>(e);
+    ty_assert<Error & SpawnSyncReturns<string>>(e);
     return { ok: false, text: e.stderr || e.message };
   }
 }
@@ -91,9 +104,8 @@ export function kick_table(s: string): string {
   return `${lib_root()}\\kicks\\${s}.kick`;
 }
 
-export function fumenutil(command: string): string {
-  return child_process
-    .execSync(`py ${lib_root()}/fumenutil/main.py ${command}`)
+export function fumenutil(i: Interaction, command: string): string {
+  return exec(i, `py ${lib_root()}/fumenutil/main.py ${command}`)
     .toString()
     .trim();
 }
@@ -101,6 +113,7 @@ export function fumenutil(command: string): string {
 export function fumens_in(t: string): Array<string> {
   const r = /\w\d+@[A-Za-z0-9+/?]+/g;
   const fumens = t.match(r) || [];
+  console.log(fumens);
   return fumens;
 }
 
@@ -118,7 +131,7 @@ export async function render<T, U>(
 
     for (const url of tinyurls) {
       const req = await fetch(url, { redirect: "manual" });
-    //   console.log(req.headers);
+      //   console.log(req.headers);
       if (req.status === 301) {
         const actual = req.headers.get("Location")!;
         for (const z of fumens_in(actual)) {
@@ -147,7 +160,15 @@ export async function render<T, U>(
   const img = await req.arrayBuffer();
 
   return await f({
+    content: `\u{E007E}[fumen.zui.jp](<https://fumen.zui.jp/?${z}>)`,
     files: [{ name: "fumen.gif", attachment: Buffer.from(img) }],
     allowedMentions: { repliedUser: false },
   } as T);
+}
+
+export function subsets<T>(t: Array<T>): Array<Array<T>> {
+  return Array(2 ** t.length)
+    .fill(0)
+    .map((_, i) => i)
+    .map((m) => t.filter((_, i) => ((1 << i) & m) !== 0));
 }
