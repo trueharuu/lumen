@@ -6,7 +6,7 @@ import {
 } from "@sapphire/framework";
 import { ChatInputCommandInteraction } from "discord.js";
 import { a_tetfu } from "../args";
-import { fumenutil, respond_lengthy } from "../util";
+import { clean, respond_lengthy } from "../util";
 import glueFumen from "../gluingfumens/src/lib/glueFumen";
 import { assemble } from "../ext/unglue";
 
@@ -48,6 +48,7 @@ export class FumenCommand extends Command {
       await interaction.editReply(
         respond_lengthy("", glueFumen(tetfu).join("\n"), false)
       );
+      clean(interaction);
       return;
     }
 
@@ -56,6 +57,7 @@ export class FumenCommand extends Command {
       await interaction.editReply(
         respond_lengthy("", assemble(tetfu.split(" ")).join("\n"), false)
       );
+      clean(interaction);
       return;
     }
   }

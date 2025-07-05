@@ -53,6 +53,6 @@ export class RenCommand extends Command {
       await interaction.editReply(respond_lengthy(":warning:", result.text));
     }
 
-    clean(interaction.user.id, interaction.id);
+    clean(interaction);
   }
 }

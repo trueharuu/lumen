@@ -9,7 +9,8 @@ export class MessageCreateListener extends Listener<Events.MessageCreate> {
     context: Listener.LoaderContext,
     options: Listener.Options
   ) {
-    super(context, { ...options, once: true, event: Events.MessageCreate });
+    console.log('ok listening!');
+    super(context, { ...options, once: false, event: Events.MessageCreate });
   }
 
   public async run(
@@ -19,11 +20,11 @@ export class MessageCreateListener extends Listener<Events.MessageCreate> {
       lib_root() + "/no_autorender.txt",
       "utf-8"
     ).split("\n");
+    // console.log(message.content);
     if (
       !no_autorender.includes(message.author.id) &&
       !message.content.includes("\u{E007E}")
     ) {
-      console.log(message.content);
       const z = await render(message.content, message.reply.bind(message));
       if (z) {
         state.responded_messages.set(message.id, z.id);

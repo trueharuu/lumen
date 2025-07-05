@@ -115,3 +115,21 @@ export function a_piece(c: SlashCommandStringOption): SlashCommandStringOption {
       choice("T")
     );
 }
+
+export function a_color(c: SlashCommandStringOption): SlashCommandStringOption {
+  return c
+    .setName("color")
+    .setDescription("A type of mino.")
+    .setChoices(
+      choice("I"),
+      choice("J"),
+      choice("O"),
+      choice("L"),
+      choice("Z"),
+      choice("S"),
+      choice("T"),
+      choice("All colored minos", "colored"),
+      choice("All minos", "all"),
+      choice("Garbage", "garbage")
+    );
+}

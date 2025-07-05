@@ -15,7 +15,7 @@ export class MessageDeleteListener extends Listener<Events.MessageDelete> {
     context: Listener.LoaderContext,
     options: Listener.Options
   ) {
-    super(context, { ...options, once: true, event: Events.MessageDelete });
+    super(context, { ...options, once: false, event: Events.MessageDelete });
   }
 
   public override async run(

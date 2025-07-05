@@ -7,6 +7,7 @@ import {
 import { ChatInputCommandInteraction } from "discord.js";
 import {
   a_clear,
+  a_color,
   a_drop_type,
   a_hold,
   a_kick_table,
@@ -17,6 +18,9 @@ import {
 } from "../args";
 import { clean, kick_table, respond_lengthy, sfinder } from "../util";
 import { p_setup } from "../parser";
+import { decode } from "tetris-fumen/lib/decoder";
+import { Field } from "tetris-fumen";
+import { encode } from "tetris-fumen/lib/encoder";
 
 export class SetupCommand extends Command {
   public constructor(context: Command.LoaderContext, options: Command.Options) {
@@ -28,29 +32,14 @@ export class SetupCommand extends Command {
   ): Promise<void> {
     registry.registerChatInputCommand((b) =>
       b
-        .setName("setup")
-        .setDescription("Runs sfinder `setup`.")
+        .setName("congruents")
+        .setDescription("Returns all ways to stack a setup.")
         .addStringOption((c) => a_tetfu(c))
         .addStringOption((c) => a_pattern(c))
-        .addStringOption((c) => a_piece(c).setName("fill").setRequired(true))
-        .addStringOption((c) => a_piece(c).setName("margin"))
-        .addStringOption((c) => a_piece(c).setName("free"))
-        .addIntegerOption((c) => a_clear(c))
+        .addStringOption((c) => a_color(c).setRequired(true))
         .addStringOption((c) => a_hold(c))
         .addStringOption((c) => a_kick_table(c))
         .addStringOption((c) => a_drop_type(c))
-        .addStringOption((c) =>
-          c
-            .setName("exclude")
-            .setDescription('Exclude solutions that have a "hole"')
-            .addChoices(choice("holes"), choice("strict-holes"), choice("none"))
-        )
-        .addIntegerOption((c) =>
-          c
-            .setName("n")
-            .setDescription("Amount of pieces to use")
-            .setRequired(false)
-        )
     );
   }
 
@@ -60,21 +49,34 @@ export class SetupCommand extends Command {
   ): Promise<void> {
     await interaction.deferReply();
 
-    const tetfu = interaction.options.getString("tetfu", true);
+    let tetfu = interaction.options.getString("tetfu", true);
     const pattern = interaction.options.getString("pattern", true);
-    const fill = interaction.options.getString("fill", false);
-    const margin = interaction.options.getString("margin", false);
-    const free = interaction.options.getString("free", false);
-    const clear = interaction.options.getInteger("clear", false);
+    let color = interaction.options.getString("color", true);
     const hold = interaction.options.getString("hold", false) ?? "use";
     const kicks =
       interaction.options.getString("kicks", false) ?? kick_table("srs");
     const drop_type =
       interaction.options.getString("drop_type", false) ?? "softdrop";
-    const exclude = interaction.options.getString("exclude", false) ?? "none";
-    const n = interaction.options.getInteger("n", false);
 
-    const command = `setup -t ${tetfu} -p ${pattern} ${fill ? `-f ${fill}` : ""} ${margin ? `-m ${margin}` : ""} ${free ? `-F ${free}` : ""} ${clear ? `-l ${clear}` : ""} -H ${hold} -K ${kicks} -d ${drop_type} -e ${exclude} ${n ? `-np ${n}` : ""}`;
+    if (color === "colored") {
+      color = "I";
+      tetfu = this.recolor(tetfu, "IJOLZST", "I");
+    }
+
+    if (color === "all") {
+      color = "I";
+      tetfu = this.recolor(tetfu, "IJOLZSTX", "I");
+    }
+
+    if (color === "garbage") {
+      color = "I";
+      // :stare:
+      tetfu = this.recolor(tetfu, "IJOLZST", "O");
+      tetfu = this.recolor(tetfu, "X", "I");
+      tetfu = this.recolor(tetfu, "O", "X");
+    }
+
+    const command = `setup -t ${tetfu} -p ${pattern} -H ${hold} -K ${kicks} -d ${drop_type} -f ${color}`;
 
     const result = sfinder(interaction, command);
 
@@ -84,7 +86,25 @@ export class SetupCommand extends Command {
     } else {
       await interaction.editReply(respond_lengthy(":warning:", result.text));
     }
+  }
 
-    clean(interaction);
+  public recolor(tetfu: string, from: string, to: string): string {
+    const opts = { garbage: false, separator: "" };
+    return (
+      "v115@" +
+      encode(
+        decode(tetfu).map((x) => {
+          // console.log(x.field.str(opts));
+          // console.log(
+          //   x.field.str(opts).replace(/./g, ($) => (from.includes($) ? to : $))
+          // );
+          x.field = Field.create(
+            x.field.str(opts).replace(/./g, ($) => (from.includes($) ? to : $))
+          );
+
+          return x;
+        })
+      )
+    );
   }
 }

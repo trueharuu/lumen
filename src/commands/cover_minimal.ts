@@ -1,13 +1,7 @@
 import { Command } from "@sapphire/framework";
 import { InteractionContextType } from "discord.js";
 
-import {
-  clean,
-  fumenutil,
-  kick_table,
-  respond_lengthy,
-  sfinder,
-} from "../util";
+import { clean, kick_table, respond_lengthy, sfinder } from "../util";
 import { p_cover, p_cover_minimals } from "../parser";
 import {
   a_clear,
@@ -18,6 +12,7 @@ import {
   a_pattern,
   a_tetfu,
 } from "../args";
+import glueFumen from "../gluingfumens/src/lib/glueFumen";
 
 export class CoverMinimalCommand extends Command {
   public constructor(context: Command.LoaderContext, options: Command.Options) {
@@ -30,7 +25,7 @@ export class CoverMinimalCommand extends Command {
     registry.registerChatInputCommand((builder) =>
       builder
         .setName("cover_minimal")
-        .setDescription("Runs sfinder `cover`.")
+        .setDescription("Runs sfinder `cover`, returning only the minimal setups needed to reach full coverage.")
         .addStringOption((c) => a_tetfu(c))
         .addStringOption((c) => a_pattern(c))
         .addStringOption((c) => a_hold(c))
@@ -90,19 +85,23 @@ export class CoverMinimalCommand extends Command {
     const max_sd = interaction.options.getInteger("max_sd", false) ?? -1;
     const clear = interaction.options.getInteger("clear", false) ?? -1;
 
-    const gf = fumenutil(interaction, `fixcover ${tetfu}`);
+    const gf = tetfu
+      .split(" ")
+      .flatMap((x) => glueFumen(x))
+      .join(" ");
+      
     // console.log(gf);
     const command = `cover -t ${gf} -p ${pattern} -H ${hold} -d ${drop_type} -K ${kicks} -m ${mirror ? "yes" : "no"} -M ${cover_mode} -mc ${clear} -ms ${max_sd} -P ${priority ? "yes" : "no"} -l ${last_sd} -sb ${starting_b2b}`;
 
     const result = sfinder(interaction, command);
 
     if (result.ok) {
-      const t = p_cover_minimals(interaction);
+      const t = p_cover_minimals(interaction, command);
       interaction.editReply(respond_lengthy("", t, false));
     } else {
       interaction.editReply(respond_lengthy(":warning:", result.text));
     }
 
-    // clean(interaction.user.id, interaction.id);
+    clean(interaction);
   }
 }

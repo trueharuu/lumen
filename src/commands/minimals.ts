@@ -60,6 +60,8 @@ export class MinimalsCommand extends Command {
       await interaction.editReply(respond_lengthy(":warning:", result.text));
     }
 
+    clean(interaction);
+
     // clean(interaction.user.id, interaction.id);
     // console.log(z);
   }

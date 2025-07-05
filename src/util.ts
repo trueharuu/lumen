@@ -44,10 +44,14 @@ export interface SfinderResult {
 }
 
 export function exec(i: Interaction, t: string) {
+  t = t.replace(/[\&\|\<\>\(\)\^]/g, ($) => "^" + $);
   const ui = instance(i.user.id, i.id);
   fs.mkdirSync(ui, { recursive: true });
-  fs.writeFileSync(ui + "/command", serialized(i));
-  return execSync(t, { encoding: "utf-8", cwd: ui });
+  fs.writeFileSync(ui + "/command", serialized(i) + '\n' + t);
+  return execSync(
+    t,
+    { encoding: "utf-8", cwd: ui }
+  );
 }
 
 export function serialized(i: Interaction) {
@@ -76,17 +80,8 @@ export function sfinder(i: Interaction, command: string): SfinderResult {
   }
 }
 
-export function clean(uid: string, iid?: string) {
-  if (iid) {
-    fs.rmSync(instance(uid, iid), { recursive: true });
-  } else {
-    const d = fs.readdirSync(thread_root());
-    for (const path of d) {
-      if (path.startsWith(uid + "-")) {
-        fs.rmSync(`${thread_root()}\\${path}`, { recursive: true });
-      }
-    }
-  }
+export function clean(i: Interaction) {
+  fs.rmSync(instance(i.user.id, i.id), { recursive: true });
 }
 
 export function kick_tables(): Array<
@@ -102,12 +97,6 @@ export function kick_tables(): Array<
 
 export function kick_table(s: string): string {
   return `${lib_root()}\\kicks\\${s}.kick`;
-}
-
-export function fumenutil(i: Interaction, command: string): string {
-  return exec(i, `py ${lib_root()}/fumenutil/main.py ${command}`)
-    .toString()
-    .trim();
 }
 
 export function fumens_in(t: string): Array<string> {

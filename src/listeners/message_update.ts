@@ -15,7 +15,7 @@ export class MessageUpdateListener extends Listener<Events.MessageUpdate> {
     context: Listener.LoaderContext,
     options: Listener.Options
   ) {
-    super(context, { ...options, once: true, event: Events.MessageUpdate });
+    super(context, { ...options, once: false, event: Events.MessageUpdate });
   }
 
   public override async run(

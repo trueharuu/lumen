@@ -71,13 +71,13 @@ export function cover_setups(t: string): {
   return { setups, total };
 }
 
-export function p_cover(interaction: Interaction): string {
+export function p_cover(interaction: Interaction, cover_mode: string): string {
   const t = fs.readFileSync(
     instance(interaction.user.id, interaction.id) + "/output/cover.csv",
     "utf-8"
   );
   const { setups, total } = cover_setups(t);
-  let txt = "\u{E007E}\n";
+  let txt = `\u{E007E}\`${cover_mode}\` cover\n`;
 
   for (const [key, value] of setups) {
     txt += `\`${key}\`: ${value.length}/${total.size} (${((value.length / total.size) * 100).toFixed(2)}%)\n`;
@@ -98,7 +98,7 @@ export function p_cover(interaction: Interaction): string {
   return txt;
 }
 
-export function p_cover_minimals(interaction: Interaction): string {
+export function p_cover_minimals(interaction: Interaction, cover_mode: string): string {
   const t = fs.readFileSync(
     instance(interaction.user.id, interaction.id) + "/output/cover.csv",
     "utf-8"
@@ -126,7 +126,7 @@ export function p_cover_minimals(interaction: Interaction): string {
   }
 
   if (minimal_set) {
-    let txt = "\u{E007E}\n";
+    let txt = `\u{E007E}Cover mode ${cover_mode}\n`;
 
     for (const { name, queues } of minimal_set) {
       txt += `\`${name}\`: ${queues.length}/${total.size} (${((queues.length / total.size) * 100).toFixed(2)}%)\n`;
