@@ -26,10 +26,10 @@ export const client = new SapphireClient({
 export const rest = new REST().setToken(process.env.TOKEN!);
 
 (async () => {
-  ApplicationCommandRegistries.setDefaultGuildIds([
-    "1031692332824793089",
-    "1384394244051177642",
-  ]);
+  // ApplicationCommandRegistries.setDefaultGuildIds([
+  //   "1031692332824793089",
+  //   "1384394244051177642",
+  // ]);
   await client.login(process.env.TOKEN);
   // await (await client.guilds.fetch('1384394244051177642')).commands.delete('1384400854999629916')
 })();

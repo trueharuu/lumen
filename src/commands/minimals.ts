@@ -63,6 +63,6 @@ export class MinimalsCommand extends Command {
     clean(interaction);
 
     // clean(interaction.user.id, interaction.id);
-    // console.log(z);
+    
   }
 }

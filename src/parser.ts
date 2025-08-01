@@ -6,7 +6,7 @@ import { encode } from "tetris-fumen/lib/encoder";
 import { EncodePages } from "tetris-fumen";
 export function p_path(interaction: Interaction): string {
   const t = fs.readFileSync(
-    instance(interaction.user.id, interaction.id) + "/output/path_unique.html",
+    instance(interaction) + "/output/path_unique.html",
     "utf-8"
   );
   const l = links(t);
@@ -59,7 +59,7 @@ export function cover_setups(t: string): {
     const setup = csv[0][i];
     const qs = [];
     for (let j = 1; j < csv.length; j++) {
-      // console.log(inspect(csv[j][i]));
+      
       if (csv[j][i] === "O") {
         qs.push(csv[j][0]);
       }
@@ -73,7 +73,7 @@ export function cover_setups(t: string): {
 
 export function p_cover(interaction: Interaction, cover_mode: string): string {
   const t = fs.readFileSync(
-    instance(interaction.user.id, interaction.id) + "/output/cover.csv",
+    instance(interaction) + "/output/cover.csv",
     "utf-8"
   );
   const { setups, total } = cover_setups(t);
@@ -100,7 +100,7 @@ export function p_cover(interaction: Interaction, cover_mode: string): string {
 
 export function p_cover_minimals(interaction: Interaction, cover_mode: string): string {
   const t = fs.readFileSync(
-    instance(interaction.user.id, interaction.id) + "/output/cover.csv",
+    instance(interaction) + "/output/cover.csv",
     "utf-8"
   );
   const { setups, total } = cover_setups(t);
@@ -168,7 +168,7 @@ export function fumen_uri(t: string): string {
 
 export function p_ren(interaction: Interaction): string {
   const t = fs.readFileSync(
-    instance(interaction.user.id, interaction.id) + "/output/ren.html",
+    instance(interaction) + "/output/ren.html",
     "utf-8"
   );
   const l = links(t).find((x) => !x.href.startsWith("#"));
@@ -182,7 +182,7 @@ export function p_ren(interaction: Interaction): string {
 
 export function p_percent(interaction: Interaction): string {
   const t = fs.readFileSync(
-    instance(interaction.user.id, interaction.id) + "/output/last_output.txt",
+    instance(interaction) + "/output/last_output.txt",
     "utf-8"
   );
   const z = /^success = .+$/gm.exec(t);
@@ -200,20 +200,20 @@ export function p_percent(interaction: Interaction): string {
   return "Nothing was found";
 }
 
-export function p_setup(interaction: Interaction): string {
+export function p_setup(interaction: Interaction): string | null {
   const t = fs.readFileSync(
-    instance(interaction.user.id, interaction.id) + "/output/setup.html",
+    instance(interaction) + "/output/setup.html",
     "utf-8"
   );
   const l = links(t);
-  console.log(t);
+  
   const v = l.find((x) => x.text === "All solutions");
 
   if (v) {
     return fumen_uri(v.href);
   }
 
-  return "Nothing was found";
+  return null;
 }
 
 import { main } from "./ext/minimal/cli";
@@ -221,7 +221,7 @@ import { Interaction } from "discord.js";
 import { setMaxListeners } from "node:events";
 export async function p_minimals(interaction: Interaction): Promise<string> {
   const file =
-    instance(interaction.user.id, interaction.id) + "/output/path.csv";
+    instance(interaction) + "/output/path.csv";
   const t = await main(file);
 
   const f: EncodePages = [];

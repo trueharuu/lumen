@@ -38,22 +38,22 @@ export async function main(
 
   const patterns = csvToPatterns(data);
   const successPatterns = patterns.filter((p) => p.solutionCount);
-  // console.log(`${patterns.length} patterns, ${successPatterns.length} success`);
+  
 
   if (ignoreFumens) {
-    // console.log(`Ignore ${ignoreFumens.size} fumens`);
+    
     for (const pattern of successPatterns) {
       pattern.fumens = pattern.fumens.filter((f) => !ignoreFumens.has(f));
     }
   }
 
   const { edges, nodes } = patternsToGraph(successPatterns);
-  // console.log(`${edges.length} edges, ${nodes.length} nodes`);
+  
 
   const { count, sets } = findMinimalNodes(edges);
-  // console.log(`Finished in ${(Date.now() - startTime) / 1000}s`);
+  
 
-  // console.log(
+  
   //   `You must learn ${count} solutions to cover all patterns. There are ${sets.length} combinations of solutions to cover all patterns.`
   // );
 
@@ -94,7 +94,7 @@ export async function main(
 
 async function findBestSet(sets) {
   while (sets.length > 1) {
-    // console.log(`Try to find the best set. There are ${sets.length} sets`);
+    
     // find common nodes?
     const diffA = new Set();
     const diffB = new Set(sets[1]);

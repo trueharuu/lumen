@@ -32,8 +32,8 @@ export function lib_root() {
   return `${process.cwd()}\\lib`;
 }
 
-export function instance(uid: string, iid: string): string {
-  return `${thread_root()}\\${uid}\\${iid}`;
+export function instance(i: Interaction): string {
+  return `${thread_root()}\\${i.user.id}\\${i.id}`;
 }
 
 export function ty_assert<T>(t: unknown): asserts t is T {}
@@ -43,15 +43,17 @@ export interface SfinderResult {
   text: string;
 }
 
+export function spawn(i: Interaction): string {
+  const ui = instance(i);
+  fs.mkdirSync(ui, { recursive: true });
+  return ui;
+}
+
 export function exec(i: Interaction, t: string) {
   t = t.replace(/[\&\|\<\>\(\)\^]/g, ($) => "^" + $);
-  const ui = instance(i.user.id, i.id);
-  fs.mkdirSync(ui, { recursive: true });
-  fs.writeFileSync(ui + "/command", serialized(i) + '\n' + t);
-  return execSync(
-    t,
-    { encoding: "utf-8", cwd: ui }
-  );
+  const ui = spawn(i);
+  fs.writeFileSync(ui + "/command", serialized(i) + "\n" + t);
+  return execSync(t, { encoding: "utf-8", cwd: ui });
 }
 
 export function serialized(i: Interaction) {
@@ -81,7 +83,7 @@ export function sfinder(i: Interaction, command: string): SfinderResult {
 }
 
 export function clean(i: Interaction) {
-  fs.rmSync(instance(i.user.id, i.id), { recursive: true });
+  fs.rmSync(instance(i), { recursive: true });
 }
 
 export function kick_tables(): Array<
@@ -91,7 +93,7 @@ export function kick_tables(): Array<
 
   return list.map((x) => ({
     name: path.basename(x, path.extname(x)),
-    value: kick_table(x),
+    value: kick_table(path.basename(x, path.extname(x))),
   }));
 }
 
@@ -99,10 +101,14 @@ export function kick_table(s: string): string {
   return `${lib_root()}\\kicks\\${s}.kick`;
 }
 
+export function theme(s: string): string {
+  return `${lib_root()}\\theme\\${s}.theme`;
+}
+
 export function fumens_in(t: string): Array<string> {
   const r = /\w\d+@[A-Za-z0-9+/?]+/g;
   const fumens = t.match(r) || [];
-  console.log(fumens);
+  // console.log(fumens);
   return fumens;
 }
 
@@ -115,8 +121,6 @@ export async function render<T, U>(
   {
     const tu = /https?:\/\/tinyurl.com\/(.+?)(\s|$)/g;
     const tinyurls = content.match(tu) || [];
-
-    // console.log(tinyurls);
 
     for (const url of tinyurls) {
       const req = await fetch(url, { redirect: "manual" });
@@ -160,4 +164,23 @@ export function subsets<T>(t: Array<T>): Array<Array<T>> {
     .fill(0)
     .map((_, i) => i)
     .map((m) => t.filter((_, i) => ((1 << i) & m) !== 0));
+}
+
+export function* permutations<T>(t: Iterable<T>, n: number): Generator<T[]> {
+  const items = Array.from(t);
+  const current: T[] = [];
+
+  function* backtrack(depth: number): Generator<T[]> {
+    if (depth === n) {
+      yield [...current];
+      return;
+    }
+    for (const item of items) {
+      current.push(item);
+      yield* backtrack(depth + 1);
+      current.pop();
+    }
+  }
+
+  yield* backtrack(0);
 }

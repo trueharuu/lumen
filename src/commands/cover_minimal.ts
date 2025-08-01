@@ -90,7 +90,7 @@ export class CoverMinimalCommand extends Command {
       .flatMap((x) => glueFumen(x))
       .join(" ");
       
-    // console.log(gf);
+    
     const command = `cover -t ${gf} -p ${pattern} -H ${hold} -d ${drop_type} -K ${kicks} -m ${mirror ? "yes" : "no"} -M ${cover_mode} -mc ${clear} -ms ${max_sd} -P ${priority ? "yes" : "no"} -l ${last_sd} -sb ${starting_b2b}`;
 
     const result = sfinder(interaction, command);

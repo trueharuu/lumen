@@ -29,7 +29,7 @@ export function assemble(
         const operation = page.operation;
         if (operation === undefined) {
           if (print_error) {
-            console.log("warning: skipped a page with no operation");
+            
           }
 
           continue;
@@ -45,7 +45,7 @@ export function assemble(
           const y = cleared_offset(rows_cleared, operation.y + dy);
 
           if (print_error && field.at(x, y) !== "_") {
-            console.log("error: operation overlaps with current field");
+            
           }
 
           field.set(x, y, operation.type);

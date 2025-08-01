@@ -87,6 +87,10 @@ export class SetupCommand extends Command {
 
     if (result.ok) {
       const t = p_setup(interaction);
+      if (!t) {
+        await interaction.editReply("Nothing was found.");
+        return;
+      }
       if (t.startsWith("v115@")) {
         const gf = t
           .split(" ")
@@ -116,8 +120,8 @@ export class SetupCommand extends Command {
       "v115@" +
       encode(
         decode(tetfu).map((x) => {
-          // console.log(x.field.str(opts));
-          // console.log(
+          
+          
           //   x.field.str(opts).replace(/./g, ($) => (from.includes($) ? to : $))
           // );
           x.field = Field.create(

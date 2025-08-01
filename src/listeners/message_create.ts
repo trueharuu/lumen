@@ -20,7 +20,7 @@ export class MessageCreateListener extends Listener<Events.MessageCreate> {
       lib_root() + "/no_autorender.txt",
       "utf-8"
     ).split("\n");
-    // console.log(message.content);
+    
     if (
       !no_autorender.includes(message.author.id) &&
       !message.content.includes("\u{E007E}")

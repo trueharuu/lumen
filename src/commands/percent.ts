@@ -61,6 +61,6 @@ export class PercentCommand extends Command {
     clean(interaction);
 
     // clean(interaction.user.id, interaction.id);
-    // console.log(z);
+    
   }
 }

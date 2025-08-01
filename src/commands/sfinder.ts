@@ -32,6 +32,6 @@ export class SfinderCommand extends Command {
       respond_lengthy(z.ok ? "" : ":warning:", z.text)
     );
     // clean(interaction.user.id);
-    // console.log(z);
+    
   }
 }

@@ -41,14 +41,14 @@ export class SetScoreCommand extends Command {
     const csv = interaction.options.getAttachment("csv", true);
     const req = await fetch(csv.url);
     const txt = await req.text();
-    // console.log(csv.proxyURL, txt);
+    
     await interaction.editReply(this.set_score(txt));
   }
 
   public set_score(csv: string): string {
-    // console.log(csv);
+    
     const set = this.parse(csv);
-    // console.log(set);
+    
 
     const cover: Map<Setup, number> = new Map();
     const no_setup: Setup = {
@@ -59,9 +59,9 @@ export class SetScoreCommand extends Command {
     };
 
     for (const q of set.total_queues) {
-      // console.log(q);
+      
       const matches = set.setups.filter((x) => x.queues.includes(q));
-      // console.log(matches.map(x=>x.name));
+      
       const optimal = this.max_by(matches, (t) => t.scores) || no_setup;
       //   console.log(q, "is", optimal.name);
       if (!cover.has(optimal)) {
@@ -85,7 +85,7 @@ export class SetScoreCommand extends Command {
 
     txt += `\nOn average, this set scores __${avg.toFixed(2)}__ points.`;
 
-    // console.log(cover);
+    
     return txt;
   }
 
@@ -96,7 +96,7 @@ export class SetScoreCommand extends Command {
     const comments = lines[1].split(",").map((x) => x.trim());
     const score = lines[2].split(",").map((x) => x.trim());
     const total_queues = lines.slice(3).map((x) => x.split(",")[0]);
-    // console.log(comments.toString());
+    
     for (let i = 1; i < seqs.length; i++) {
       const seq = seqs[i];
       const name = comments[i];

@@ -1,6 +1,6 @@
 import { ILogger, Logger, LogLevel } from "@sapphire/framework";
 import { format } from "node:util";
-console.log()
+
 export class Tracing implements ILogger {
   public constructor(public level: LogLevel) {}
 
@@ -43,10 +43,10 @@ export class Tracing implements ILogger {
       [LogLevel.Trace]: `\x1b[35mTRACE\x1b[0m`,
       [LogLevel.Warn]: `\x1b[33m WARN\x1b[0m`,
     }[level];
-    // console.log(level);
+    
 
-    console.log(
-      `\x1b[0m${new Date().toISOString()} ${t} ${values.map((x) => format(x)).join(" ")}`
+    process.stdout.write(
+      `\x1b[0m${new Date().toISOString()} ${t} ${values.map((x) => format(x)).join(" ")}\n`
     );
   }
 }

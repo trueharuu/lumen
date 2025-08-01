@@ -59,6 +59,6 @@ export class PathCommand extends Command {
     }
 
     clean(interaction);
-    // console.log(z);
+    
   }
 }

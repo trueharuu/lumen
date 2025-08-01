@@ -19,7 +19,7 @@ import {
 import { clean, kick_table, respond_lengthy, sfinder } from "../util";
 import { p_setup } from "../parser";
 import { decode } from "tetris-fumen/lib/decoder";
-import { Field } from "tetris-fumen";
+import { Field, Page } from "tetris-fumen";
 import { encode } from "tetris-fumen/lib/encoder";
 
 export class SetupCommand extends Command {
@@ -76,16 +76,40 @@ export class SetupCommand extends Command {
       tetfu = this.recolor(tetfu, "O", "X");
     }
 
-    const command = `setup -t ${tetfu} -p ${pattern} -H ${hold} -K ${kicks} -d ${drop_type} -f ${color}`;
+    const pages = decode(tetfu);
 
-    const result = sfinder(interaction, command);
+    const results: Set<string> = new Set();
+    for (const page of pages) {
+      const tet = "v115@" + encode([page]);
+      const command = `setup -t ${tet} -p ${pattern} -H ${hold} -K ${kicks} -d ${drop_type} -f ${color}`;
+      const result = sfinder(interaction, command);
+      if (result.ok) {
+        const congruents = p_setup(interaction);
 
-    if (result.ok) {
-      const t = p_setup(interaction);
-      await interaction.editReply(respond_lengthy("", t, false));
-    } else {
-      await interaction.editReply(respond_lengthy(":warning:", result.text));
+        if (congruents) {
+          for (const congruent of decode(congruents)) {
+            results.add("v115@" + encode([congruent]));
+          }
+        }
+      } else {
+        await interaction.editReply(respond_lengthy(":warning:", result.text));
+        return;
+      }
     }
+
+    interaction.editReply(
+      respond_lengthy(
+        "",
+        "v115@" +
+          encode(
+            results
+              .values()
+              .flatMap((x) => decode(x))
+              .toArray()
+          ),
+        false
+      )
+    );
   }
 
   public recolor(tetfu: string, from: string, to: string): string {
@@ -94,8 +118,8 @@ export class SetupCommand extends Command {
       "v115@" +
       encode(
         decode(tetfu).map((x) => {
-          // console.log(x.field.str(opts));
-          // console.log(
+          
+          
           //   x.field.str(opts).replace(/./g, ($) => (from.includes($) ? to : $))
           // );
           x.field = Field.create(

@@ -80,7 +80,11 @@ export class SetupCommand extends Command {
 
     if (result.ok) {
       const t = p_setup(interaction);
-      await interaction.editReply(respond_lengthy("", t, false));
+      if (t) {
+        await interaction.editReply(respond_lengthy("", t, false));
+      } else {
+        await interaction.editReply("Nothing was found.");
+      }
     } else {
       await interaction.editReply(respond_lengthy(":warning:", result.text));
     }
