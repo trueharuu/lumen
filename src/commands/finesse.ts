@@ -135,7 +135,7 @@ export class FinesseCommand extends Command {
 
     const kzt = kicktable(readFileSync(kicks, "utf-8"));
     const pzt = piecetable(
-      readFileSync(lib_root() + "\\pieces\\tetromino.piece", "utf-8")
+      readFileSync(lib_root() + "/pieces/tetromino.piece", "utf-8")
     );
 
     const fum: EncodePage[] = [];

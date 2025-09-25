@@ -25,15 +25,15 @@ import * as fs from "node:fs";
 import path from "node:path";
 
 export function thread_root() {
-  return `${process.cwd()}\\thread`;
+  return `${process.cwd()}/thread`;
 }
 
 export function lib_root() {
-  return `${process.cwd()}\\lib`;
+  return `${process.cwd()}/lib`;
 }
 
 export function instance(i: Interaction): string {
-  return `${thread_root()}\\${i.user.id}\\${i.id}`;
+  return `${thread_root()}/${i.user.id}/${i.id}`;
 }
 
 export function ty_assert<T>(t: unknown): asserts t is T {}
@@ -50,7 +50,8 @@ export function spawn(i: Interaction): string {
 }
 
 export function exec(i: Interaction, t: string) {
-  t = t.replace(/[\&\|\<\>\(\)\^]/g, ($) => "^" + $);
+  // escape for sh
+  t = t.replace(/[\\\'\"\<\>\|\;\&\|\*\(\)\[\]\?\$\#]/g, ($) => "\\" + $);
   const ui = spawn(i);
   fs.writeFileSync(ui + "/command", serialized(i) + "\n" + t);
   return execSync(t, { encoding: "utf-8", cwd: ui });
@@ -74,7 +75,7 @@ export function serialized(i: Interaction) {
 
 export function sfinder(i: Interaction, command: string): SfinderResult {
   try {
-    const result = exec(i, `java -jar ${lib_root()}\\sfinder.jar ${command}`);
+    const result = exec(i, `java -jar ${lib_root()}/sfinder.jar ${command}`);
     return { ok: true, text: result };
   } catch (e) {
     ty_assert<Error & SpawnSyncReturns<string>>(e);
@@ -89,7 +90,7 @@ export function clean(i: Interaction) {
 export function kick_tables(): Array<
   APIApplicationCommandOptionChoice<string>
 > {
-  const list = fs.readdirSync(`${lib_root()}\\kicks`);
+  const list = fs.readdirSync(`${lib_root()}/kicks`);
 
   return list.map((x) => ({
     name: path.basename(x, path.extname(x)),
@@ -98,11 +99,11 @@ export function kick_tables(): Array<
 }
 
 export function kick_table(s: string): string {
-  return `${lib_root()}\\kicks\\${s}.kick`;
+  return `${lib_root()}/kicks/${s}.kick`;
 }
 
 export function theme(s: string): string {
-  return `${lib_root()}\\theme\\${s}.theme`;
+  return `${lib_root()}/theme/${s}.theme`;
 }
 
 export function fumens_in(t: string): Array<string> {

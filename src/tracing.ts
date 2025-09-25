@@ -46,7 +46,7 @@ export class Tracing implements ILogger {
     
 
     process.stdout.write(
-      `\x1b[0m${new Date().toISOString()} ${t} ${values.map((x) => format(x)).join(" ")}\n`
+      `\x1b[30m${new Date().toISOString()}\x1b[0m ${t} ${values.map((x) => format(x)).join(" ")}\n`
     );
   }
 }
