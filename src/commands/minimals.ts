@@ -32,7 +32,7 @@ export class MinimalsCommand extends Command {
         .addIntegerOption((c) => a_clear(c))
         .addStringOption((c) => a_kick_table(c))
         .addStringOption((c) => a_drop_type(c))
-        .setContexts(InteractionContextType.Guild)
+        .setContexts(InteractionContextType.BotDM, InteractionContextType.Guild, InteractionContextType.PrivateChannel)
     );
   }
 
@@ -63,6 +63,6 @@ export class MinimalsCommand extends Command {
     clean(interaction);
 
     // clean(interaction.user.id, interaction.id);
-    
+
   }
 }

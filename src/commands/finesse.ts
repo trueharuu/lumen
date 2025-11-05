@@ -4,7 +4,7 @@ import {
   ChatInputCommand,
   Command,
 } from "@sapphire/framework";
-import { ChatInputCommandInteraction } from "discord.js";
+import { ChatInputCommandInteraction, InteractionContextType } from "discord.js";
 import { a_kick_table, a_tetfu, choice } from "../args";
 import { kick_table, lib_root, permutations, respond_lengthy } from "../util";
 import { decode } from "tetris-fumen/lib/decoder";
@@ -67,6 +67,7 @@ export class FinesseCommand extends Command {
             .setDescription("The assumed height of the board.")
             .setRequired(false)
         )
+        .setContexts(InteractionContextType.BotDM, InteractionContextType.Guild, InteractionContextType.PrivateChannel)
     );
   }
 
@@ -82,7 +83,7 @@ export class FinesseCommand extends Command {
     const inputs = interaction.options.getInteger("inputs", false) ?? 6;
     const style = interaction.options.getString("style", false) ?? "sf180";
     const ht = interaction.options.getInteger("height", false) ?? 20;
-    
+
 
     const keyboard: Array<Key> = {
       sf: [
@@ -188,7 +189,7 @@ export class FinesseCommand extends Command {
 
             const l = i.snapshot().placement;
             if (l.x === c.x && l.y === c.y && l.rotation === c.rotation) {
-              
+
               lx = l.x;
               ly = l.y;
               lr = l.rotation;
@@ -204,7 +205,7 @@ export class FinesseCommand extends Command {
           }
         }
 
-        
+
       }
 
       if (!shortest) {

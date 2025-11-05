@@ -8,6 +8,7 @@ import {
   ApplicationCommandType,
   ChatInputCommandInteraction,
   ContextMenuCommandInteraction,
+  InteractionContextType,
 } from "discord.js";
 import { render } from "../util";
 
@@ -32,6 +33,7 @@ export class RenderCommand extends Command {
             .setDescription("The fumen to render")
             .setRequired(true)
         )
+        .setContexts(InteractionContextType.BotDM, InteractionContextType.Guild, InteractionContextType.PrivateChannel)
     );
   }
 

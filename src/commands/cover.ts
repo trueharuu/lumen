@@ -60,7 +60,7 @@ export class CoverCommand extends Command {
             .setDescription("Maximum number of soft-dropped pieces")
         )
         .addIntegerOption((c) => a_clear(c))
-        .setContexts(InteractionContextType.Guild)
+        .setContexts(InteractionContextType.BotDM, InteractionContextType.Guild, InteractionContextType.PrivateChannel)
     );
   }
 
@@ -89,7 +89,7 @@ export class CoverCommand extends Command {
       .split(" ")
       .flatMap((x) => glueFumen(x))
       .join(" ");
-    
+
     const command = `cover -t ${gf} -p ${pattern} -H ${hold} -d ${drop_type} -K ${kicks} -m ${mirror ? "yes" : "no"} -M ${cover_mode} -mc ${clear} -ms ${max_sd} -P ${priority ? "yes" : "no"} -l ${last_sd} -sb ${starting_b2b}`;
 
     const result = sfinder(interaction, command);
@@ -100,7 +100,7 @@ export class CoverCommand extends Command {
     } else {
       interaction.editReply(respond_lengthy(":warning:", result.text));
     }
-    
+
     clean(interaction);
   }
 }

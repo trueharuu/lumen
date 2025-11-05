@@ -3,7 +3,7 @@ import {
   ChatInputCommand,
   Command,
 } from "@sapphire/framework";
-import { ChatInputCommandInteraction } from "discord.js";
+import { ChatInputCommandInteraction, InteractionContextType } from "discord.js";
 import { readFileSync, writeFileSync } from "node:fs";
 import { lib_root } from "../util";
 
@@ -25,6 +25,7 @@ export class AutorenderCommand extends Command {
         .addSubcommand((t) =>
           t.setName("off").setDescription("Disables auto-render.")
         )
+        .setContexts(InteractionContextType.BotDM, InteractionContextType.Guild, InteractionContextType.PrivateChannel)
     );
   }
 

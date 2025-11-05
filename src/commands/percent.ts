@@ -2,7 +2,7 @@ import { Command } from "@sapphire/framework";
 import { InteractionContextType } from "discord.js";
 
 import { clean, kick_table, respond_lengthy, sfinder } from "../util";
-import { p_path, p_percent } from "../parser";
+import { p_percent } from "../parser";
 import {
   a_clear,
   a_drop_type,
@@ -30,7 +30,7 @@ export class PercentCommand extends Command {
         .addIntegerOption((c) => a_clear(c))
         .addStringOption((c) => a_kick_table(c))
         .addStringOption((c) => a_drop_type(c))
-        .setContexts(InteractionContextType.Guild)
+        .setContexts(InteractionContextType.BotDM, InteractionContextType.Guild, InteractionContextType.PrivateChannel)
     );
   }
 
@@ -61,6 +61,6 @@ export class PercentCommand extends Command {
     clean(interaction);
 
     // clean(interaction.user.id, interaction.id);
-    
+
   }
 }

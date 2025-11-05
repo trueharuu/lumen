@@ -4,7 +4,7 @@ import {
   ChatInputCommand,
   Command,
 } from "@sapphire/framework";
-import { ChatInputCommandInteraction } from "discord.js";
+import { ChatInputCommandInteraction, InteractionContextType } from "discord.js";
 import { a_tetfu } from "../args";
 import { clean, respond_lengthy } from "../util";
 import glueFumen from "../gluingfumens/src/lib/glueFumen";
@@ -59,7 +59,8 @@ export class FumenCommand extends Command {
             .setName("nocomments")
             .setDescription("Removes all comments")
             .addStringOption((c) => a_tetfu(c)),
-        ),
+        )
+        .setContexts(InteractionContextType.BotDM, InteractionContextType.Guild, InteractionContextType.PrivateChannel),
     );
   }
 
@@ -110,7 +111,7 @@ export class FumenCommand extends Command {
 
     if (scm === "dedup") {
       const tetfu = interaction.options.getString("tetfu", true);
-      const pages = decode(tetfu).map(x=> { x.flags = undefined as never; return x }).map((x) => encode([x]));
+      const pages = decode(tetfu).map(x => { x.flags = undefined as never; return x }).map((x) => encode([x]));
       console.log(pages);
 
       const t = encode(

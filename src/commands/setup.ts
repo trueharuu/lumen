@@ -4,7 +4,7 @@ import {
   ChatInputCommand,
   Command,
 } from "@sapphire/framework";
-import { ChatInputCommandInteraction } from "discord.js";
+import { ChatInputCommandInteraction, InteractionContextType } from "discord.js";
 import {
   a_clear,
   a_drop_type,
@@ -51,6 +51,7 @@ export class SetupCommand extends Command {
             .setDescription("Amount of pieces to use")
             .setRequired(false)
         )
+        .setContexts(InteractionContextType.BotDM, InteractionContextType.Guild, InteractionContextType.PrivateChannel)
     );
   }
 

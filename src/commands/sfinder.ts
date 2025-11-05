@@ -18,7 +18,7 @@ export class SfinderCommand extends Command {
         .addStringOption((c) =>
           c.setName("arg").setDescription("Command to run.")
         )
-        .setContexts(InteractionContextType.Guild)
+        .setContexts(InteractionContextType.BotDM, InteractionContextType.Guild, InteractionContextType.PrivateChannel)
     );
   }
 
@@ -32,6 +32,6 @@ export class SfinderCommand extends Command {
       respond_lengthy(z.ok ? "" : ":warning:", z.text)
     );
     // clean(interaction.user.id);
-    
+
   }
 }

@@ -4,7 +4,7 @@ import {
   ChatInputCommand,
   Command,
 } from "@sapphire/framework";
-import { ChatInputCommandInteraction } from "discord.js";
+import { ChatInputCommandInteraction, InteractionContextType } from "discord.js";
 
 export class PingCommand extends Command {
   public constructor(context: Command.LoaderContext, options: Command.Options) {
@@ -16,6 +16,7 @@ export class PingCommand extends Command {
   ): Promise<void> {
     registry.registerChatInputCommand((b) =>
       b.setName("ping").setDescription("Bot health check")
+        .setContexts(InteractionContextType.BotDM, InteractionContextType.Guild, InteractionContextType.PrivateChannel)
     );
   }
 

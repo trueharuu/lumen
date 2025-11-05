@@ -4,7 +4,7 @@ import {
   ChatInputCommand,
   Command,
 } from "@sapphire/framework";
-import { ChatInputCommandInteraction } from "discord.js";
+import { ChatInputCommandInteraction, InteractionContextType } from "discord.js";
 import { a_drop_type, a_hold, a_kick_table, a_pattern, a_tetfu } from "../args";
 import { clean, kick_table, respond_lengthy, sfinder } from "../util";
 import { p_ren } from "../parser";
@@ -26,6 +26,8 @@ export class RenCommand extends Command {
         .addStringOption((c) => a_hold(c))
         .addStringOption((c) => a_kick_table(c))
         .addStringOption((c) => a_drop_type(c))
+        .setContexts(InteractionContextType.BotDM, InteractionContextType.Guild, InteractionContextType.PrivateChannel)
+
     );
   }
 

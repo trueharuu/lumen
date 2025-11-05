@@ -116,7 +116,7 @@ export class UtilCommand extends Command {
                 .setRequired(false)
             )
         )
-        .setContexts(InteractionContextType.Guild)
+        .setContexts(InteractionContextType.BotDM, InteractionContextType.Guild, InteractionContextType.PrivateChannel)
     );
   }
 

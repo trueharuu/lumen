@@ -4,7 +4,7 @@ import {
   ChatInputCommand,
   Command,
 } from "@sapphire/framework";
-import { ChatInputCommandInteraction } from "discord.js";
+import { ChatInputCommandInteraction, InteractionContextType } from "discord.js";
 import {
   a_clear,
   a_color,
@@ -43,6 +43,7 @@ export class SetupCommand extends Command {
         .addStringOption((c) => a_kick_table(c))
         .addStringOption((c) => a_drop_type(c))
         .addStringOption((c) => a_cover_mode(c))
+        .setContexts(InteractionContextType.BotDM, InteractionContextType.Guild, InteractionContextType.PrivateChannel)
     );
   }
 
@@ -120,8 +121,8 @@ export class SetupCommand extends Command {
       "v115@" +
       encode(
         decode(tetfu).map((x) => {
-          
-          
+
+
           //   x.field.str(opts).replace(/./g, ($) => (from.includes($) ? to : $))
           // );
           x.field = Field.create(

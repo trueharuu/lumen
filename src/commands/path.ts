@@ -30,7 +30,7 @@ export class PathCommand extends Command {
         .addIntegerOption((c) => a_clear(c))
         .addStringOption((c) => a_kick_table(c))
         .addStringOption((c) => a_drop_type(c))
-        .setContexts(InteractionContextType.Guild)
+        .setContexts(InteractionContextType.BotDM, InteractionContextType.Guild, InteractionContextType.PrivateChannel)
     );
   }
 
@@ -59,6 +59,6 @@ export class PathCommand extends Command {
     }
 
     clean(interaction);
-    
+
   }
 }
