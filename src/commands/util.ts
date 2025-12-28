@@ -14,7 +14,7 @@ import {
   theme,
 } from "../util";
 import { a_pattern, a_tetfu, choice } from "../args";
-import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import * as fs from "node:fs/promises";
 
 export class UtilCommand extends Command {
   public constructor(context: Command.LoaderContext, options: Command.Options) {
@@ -128,7 +128,7 @@ export class UtilCommand extends Command {
     if (scm === "seq") {
       const pattern = interaction.options.getString("pattern");
       const command = `util seq -p ${pattern}`;
-      const result = sfinder(interaction, command);
+      const result = await sfinder(interaction, command);
 
       if (result.ok) {
         await interaction.editReply(respond_lengthy("", result.text));
@@ -136,7 +136,7 @@ export class UtilCommand extends Command {
         await interaction.editReply(respond_lengthy(":warning:", result.text));
       }
 
-      clean(interaction);
+      await clean(interaction);
     } else if (scm === "fig") {
       const tetfu = interaction.options.getString("tetfu", true);
       const th = interaction.options.getString("theme", false) ?? "default";
@@ -150,22 +150,22 @@ export class UtilCommand extends Command {
       const next = interaction.options.getInteger("next", false) ?? 5;
 
       spawn(interaction);
-      mkdirSync(instance(interaction) + "/theme");
-      writeFileSync(
+      await fs.mkdir(instance(interaction) + "/theme", { recursive: true });
+      await fs.writeFile(
         instance(interaction) + "/theme/" + th + ".properties",
-        readFileSync(theme(th), "utf-8")
+        await fs.readFile(theme(th), "utf-8")
       );
       const command = `util fig -t ${tetfu} -c ${th} -d ${delay} -s ${start} -e ${end} -f ${frame} -F ${format} -H ${hold} -l ${line} -n ${next}`;
-      const result = sfinder(interaction, command);
+      const result = await sfinder(interaction, command);
 
       if (result.ok) {
-        const t = readFileSync(instance(interaction) + "/output/fig." + format);
+        const t = await fs.readFile(instance(interaction) + "/output/fig." + format);
 
         await interaction.editReply({
           files: [new AttachmentBuilder(t).setName("fig." + format)],
         });
       } else {
-        interaction.editReply(respond_lengthy(":warning:", result.text));
+        await interaction.editReply(respond_lengthy(":warning:", result.text));
       }
     }
   }

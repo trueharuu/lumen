@@ -49,16 +49,16 @@ export class PathCommand extends Command {
 
     const command = `path -t ${tetfu} -p ${pattern} -H ${hold} -d ${drop_type} -K "${kicks}" -c ${clear}`;
 
-    const result = sfinder(interaction, command);
+    const result = await sfinder(interaction, command);
 
     if (result.ok) {
-      const t = p_path(interaction);
+      const t = await p_path(interaction);
       await interaction.editReply(respond_lengthy("", t, false));
     } else {
       await interaction.editReply(respond_lengthy(":warning:", result.text));
     }
 
-    clean(interaction);
+    await clean(interaction);
 
   }
 }

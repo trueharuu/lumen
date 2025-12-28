@@ -50,3 +50,5 @@ export class Tracing implements ILogger {
     );
   }
 }
+
+export const tracing = new Tracing(LogLevel.Info);

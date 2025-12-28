@@ -4,7 +4,7 @@ import {
   Command,
 } from "@sapphire/framework";
 import { ChatInputCommandInteraction, InteractionContextType } from "discord.js";
-import { readFileSync, writeFileSync } from "node:fs";
+import * as fs from "node:fs/promises";
 import { lib_root } from "../util";
 
 export class AutorenderCommand extends Command {
@@ -34,10 +34,10 @@ export class AutorenderCommand extends Command {
     context: ChatInputCommand.RunContext
   ): Promise<void> {
     const uid = interaction.user.id;
-    let disabled = readFileSync(
+    let disabled = (await fs.readFile(
       lib_root() + "/no_autorender.txt",
       "utf8"
-    ).split("\n");
+    )).split("\n");
     const scm = interaction.options.getSubcommand();
 
     if (scm === "on") {
@@ -72,7 +72,7 @@ export class AutorenderCommand extends Command {
       });
     }
 
-    writeFileSync(
+    await fs.writeFile(
       lib_root() + "/no_autorender.txt",
       disabled.join("\n").trim()
     );

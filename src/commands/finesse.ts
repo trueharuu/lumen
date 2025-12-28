@@ -19,7 +19,7 @@ import {
   say_key,
   SpinBonuses,
 } from "../engine/input";
-import { readFileSync } from "fs";
+import * as fs from "fs/promises";
 import {
   parsePiece,
   parseRotation,
@@ -134,9 +134,9 @@ export class FinesseCommand extends Command {
 
     //   console.log(clean, p);
 
-    const kzt = kicktable(readFileSync(kicks, "utf-8"));
+    const kzt = kicktable(await fs.readFile(kicks, "utf-8"));
     const pzt = piecetable(
-      readFileSync(lib_root() + "/pieces/tetromino.piece", "utf-8")
+      await fs.readFile(lib_root() + "/pieces/tetromino.piece", "utf-8")
     );
 
     const fum: EncodePage[] = [];

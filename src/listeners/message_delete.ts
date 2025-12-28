@@ -6,8 +6,6 @@ import {
   OmitPartialGroupDMChannel,
   PartialMessage,
 } from "discord.js";
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
-import { lib_root, render, thread_root } from "../util";
 import { state } from "../state";
 
 export class MessageDeleteListener extends Listener<Events.MessageDelete> {

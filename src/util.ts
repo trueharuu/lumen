@@ -1,10 +1,13 @@
 import {
   APIApplicationCommandOptionChoice,
+  Collection,
   Interaction,
   InteractionEditReplyOptions,
   InteractionReplyOptions,
+  Message,
 } from "discord.js";
 import { execSync, SpawnSyncReturns } from "node:child_process";
+import { tracing } from "./tracing";
 
 export function respond_lengthy(
   start: string,
@@ -21,8 +24,9 @@ export function respond_lengthy(
   return { content: `${start} ${cb ? "```\n" : ""}${t}${cb ? "\n```" : ""}` };
 }
 
-import * as fs from "node:fs";
+import * as fs from "node:fs/promises";
 import path from "node:path";
+import { readdirSync } from "node:fs";
 
 export function thread_root() {
   return `${process.cwd()}/thread`;
@@ -36,24 +40,25 @@ export function instance(i: Interaction): string {
   return `${thread_root()}/${i.user.id}/${i.id}`;
 }
 
-export function ty_assert<T>(t: unknown): asserts t is T {}
+export function ty_assert<T>(t: unknown): asserts t is T { }
 
 export interface SfinderResult {
   ok: boolean;
   text: string;
 }
 
-export function spawn(i: Interaction): string {
+export async function spawn(i: Interaction): Promise<string> {
   const ui = instance(i);
-  fs.mkdirSync(ui, { recursive: true });
+  await fs.mkdir(ui, { recursive: true });
   return ui;
 }
 
-export function exec(i: Interaction, t: string) {
+export async function exec(i: Interaction, t: string): Promise<string> {
   // escape for sh
   t = t.replace(/[\\\'\"\<\>\|\;\&\|\*\(\)\[\]\?\$\#]/g, ($) => "\\" + $);
-  const ui = spawn(i);
-  fs.writeFileSync(ui + "/command", serialized(i) + "\n" + t);
+  const ui = await spawn(i);
+  tracing.warn(`\x1b[34m${i.user.username}\x1b[0m (${i.user.id}, ${i.id}) ran \x1b[33m${t}\x1b[0m`);
+  await fs.writeFile(ui + "/command", serialized(i) + "\n" + t);
   return execSync(t, { encoding: "utf-8", cwd: ui });
 }
 
@@ -73,9 +78,9 @@ export function serialized(i: Interaction) {
   return i.id;
 }
 
-export function sfinder(i: Interaction, command: string): SfinderResult {
+export async function sfinder(i: Interaction, command: string): Promise<SfinderResult> {
   try {
-    const result = exec(i, `java -jar ${lib_root()}/sfinder.jar ${command}`);
+    const result = await exec(i, `java -jar ${lib_root()}/sfinder.jar ${command}`);
     return { ok: true, text: result };
   } catch (e) {
     ty_assert<Error & SpawnSyncReturns<string>>(e);
@@ -83,14 +88,16 @@ export function sfinder(i: Interaction, command: string): SfinderResult {
   }
 }
 
-export function clean(i: Interaction) {
-  fs.rmSync(instance(i), { recursive: true });
+export async function clean(i: Interaction) {
+  try {
+    await fs.rm(instance(i), { recursive: true });
+  } catch { }
 }
 
 export function kick_tables(): Array<
   APIApplicationCommandOptionChoice<string>
 > {
-  const list = fs.readdirSync(`${lib_root()}/kicks`);
+  const list = readdirSync(`${lib_root()}/kicks`);
 
   return list.map((x) => ({
     name: path.basename(x, path.extname(x)),
@@ -106,29 +113,47 @@ export function theme(s: string): string {
   return `${lib_root()}/theme/${s}.theme`;
 }
 
-export function fumens_in(t: string): Array<string> {
+export async function fumens_in(message: Message | string): Promise<Array<string>> {
+  if (typeof message === "string") {
+    message = { content: message, attachments: new Collection() } as Message;
+  }
+
   const r = /\w\d+@[A-Za-z0-9+/?]+/g;
-  const fumens = t.match(r) || [];
+  const fumens: Array<string> = message.content.match(r) || [];
+  for (const att of message.attachments.values()) {
+    // console.log(att);
+    if (att.contentType?.split(';').map(x => x.trim()).includes("text/plain")) {
+      const z = att.url;
+      const p = await fetch(z);
+      const t = await p.text();
+      const afumens = t.match(r) || [];
+      for (const x of afumens) {
+        fumens.push(x);
+      }
+    }
+  }
   // console.log(fumens);
   return fumens;
 }
 
 export async function render<T, U>(
-  content: string,
+  message: Message,
   f: (t: T) => Promise<U>,
   silent: boolean = true
 ): Promise<U | undefined> {
-  const fumens = fumens_in(content);
+  // console.log(message);
+  const fumens = await fumens_in(message);
+  // console.log();
   {
     const tu = /https?:\/\/tinyurl.com\/(.+?)(\s|$)/g;
-    const tinyurls = content.match(tu) || [];
+    const tinyurls = message.content.match(tu) || [];
 
     for (const url of tinyurls) {
       const req = await fetch(url, { redirect: "manual" });
       //   console.log(req.headers);
       if (req.status === 301) {
         const actual = req.headers.get("Location")!;
-        for (const z of fumens_in(actual)) {
+        for (const z of await fumens_in(actual)) {
           fumens.push(z);
         }
       }
@@ -154,7 +179,7 @@ export async function render<T, U>(
   const img = await req.arrayBuffer();
 
   return await f({
-    content: `\u{E007E}[fumen.zui.jp](<https://fumen.zui.jp/?${z}>)`,
+    content: z.length > 1950 ? '\u{E007E}' : `\u{E007E}[fumen.zui.jp](<https://fumen.zui.jp/?${z}#english.js>)`,
     files: [{ name: "fumen.gif", attachment: Buffer.from(img) }],
     allowedMentions: { repliedUser: false },
   } as T);

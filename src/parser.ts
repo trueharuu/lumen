@@ -1,11 +1,10 @@
-import * as fs from "node:fs";
+import * as fs from "node:fs/promises";
 import { instance, subsets } from "./util";
-import { execSync } from "node:child_process";
 import { decode } from "tetris-fumen/lib/decoder";
 import { encode } from "tetris-fumen/lib/encoder";
 import { EncodePages } from "tetris-fumen";
-export function p_path(interaction: Interaction): string {
-  const t = fs.readFileSync(
+export async function p_path(interaction: Interaction): Promise<string> {
+  const t = await fs.readFile(
     instance(interaction) + "/output/path_unique.html",
     "utf-8"
   );
@@ -59,7 +58,7 @@ export function cover_setups(t: string): {
     const setup = csv[0][i];
     const qs = [];
     for (let j = 1; j < csv.length; j++) {
-      
+
       if (csv[j][i] === "O") {
         qs.push(csv[j][0]);
       }
@@ -71,8 +70,8 @@ export function cover_setups(t: string): {
   return { setups, total };
 }
 
-export function p_cover(interaction: Interaction, cover_mode: string): string {
-  const t = fs.readFileSync(
+export async function p_cover(interaction: Interaction, cover_mode: string): Promise<string> {
+  const t = await fs.readFile(
     instance(interaction) + "/output/cover.csv",
     "utf-8"
   );
@@ -98,8 +97,8 @@ export function p_cover(interaction: Interaction, cover_mode: string): string {
   return txt;
 }
 
-export function p_cover_minimals(interaction: Interaction, cover_mode: string): string {
-  const t = fs.readFileSync(
+export async function p_cover_minimals(interaction: Interaction, cover_mode: string): Promise<string> {
+  const t = await fs.readFile(
     instance(interaction) + "/output/cover.csv",
     "utf-8"
   );
@@ -166,8 +165,8 @@ export function fumen_uri(t: string): string {
   return t.replace(/.+?\w(\d+)@(.+)/g, ($, $v, $d) => `v${$v}@${$d}`);
 }
 
-export function p_ren(interaction: Interaction): string {
-  const t = fs.readFileSync(
+export async function p_ren(interaction: Interaction): Promise<string> {
+  const t = await fs.readFile(
     instance(interaction) + "/output/ren.html",
     "utf-8"
   );
@@ -180,8 +179,8 @@ export function p_ren(interaction: Interaction): string {
   return "Nothing was found";
 }
 
-export function p_percent(interaction: Interaction): string {
-  const t = fs.readFileSync(
+export async function p_percent(interaction: Interaction): Promise<string> {
+  const t = await fs.readFile(
     instance(interaction) + "/output/last_output.txt",
     "utf-8"
   );
@@ -200,13 +199,13 @@ export function p_percent(interaction: Interaction): string {
   return "Nothing was found";
 }
 
-export function p_setup(interaction: Interaction): string | null {
-  const t = fs.readFileSync(
+export async function p_setup(interaction: Interaction): Promise<string | null> {
+  const t = await fs.readFile(
     instance(interaction) + "/output/setup.html",
     "utf-8"
   );
   const l = links(t);
-  
+
   const v = l.find((x) => x.text === "All solutions");
 
   if (v) {
@@ -218,7 +217,6 @@ export function p_setup(interaction: Interaction): string | null {
 
 import { main } from "./ext/minimal/cli";
 import { Interaction } from "discord.js";
-import { setMaxListeners } from "node:events";
 export async function p_minimals(interaction: Interaction): Promise<string> {
   const file =
     instance(interaction) + "/output/path.csv";
@@ -254,3 +252,42 @@ export function join_fumens(t: Array<string>): string {
 
   return "v115@" + encode(p);
 }
+
+export async function p_spin(interaction: Interaction, verbose: boolean): Promise<string> {
+  const t = await fs.readFile(
+    instance(interaction) + "/output/spin.csv",
+    "utf-8"
+  );
+
+  const lines = t.split(/\n+/).slice(1).filter((x) => x.trim() !== "").map((x) => x.trim().split(",").map((y) => y.trim())).map(x => {
+    const fumen = x[0].slice('http://fumen.zui.jp/?'.length);
+    const doable = x[1] === 'O';
+    const used = x[2];
+    // const n = x[3];
+    const clear = Number(x[4]);
+    const mini = x[5] === 'O';
+    const special = x[6];
+    const total_clear = Number(x[7]);
+    const hole = Number(x[8]);
+    const t_rot = x[9];
+    const t_x = Number(x[10]);
+    const t_y = Number(x[11]);
+
+    return { fumen, doable, used, clear, mini, special, total_clear, hole, t_rot, t_x, t_y };
+  }).filter(x=>x.doable).map(x => {
+    const d = decode(x.fumen);
+    // append info to comment
+    if (verbose) {
+      d[0].comment = `TS${x.mini ? 'M' : ''}${clearcount[x.clear]}${x.special !== '' ? ' ' + x.special : ''} ${x.used} [${x.t_x},${x.t_y},${rots[x.t_rot as keyof typeof rots]}] ${x.hole}H${x.total_clear}C`;
+    } else {
+      d[0].comment = `TS${x.mini ? 'M' : ''}${clearcount[x.clear]}${x.special !== '' ? ' '+x.special : ''}`;
+    }
+
+    return d[0];
+  });
+
+  return 'v115@' + encode(lines);
+}
+
+export const clearcount = ['0', 'S', 'D', 'T'];
+export const rots = { '0': 'N', 'R': 'E', '2': 'S', 'L': 'W' };

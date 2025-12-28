@@ -4,7 +4,10 @@ import {
   ChatInputCommand,
   Command,
 } from "@sapphire/framework";
-import { ChatInputCommandInteraction, InteractionContextType } from "discord.js";
+import {
+  ChatInputCommandInteraction,
+  InteractionContextType,
+} from "discord.js";
 import {
   a_clear,
   a_color,
@@ -43,7 +46,11 @@ export class SetupCommand extends Command {
         .addStringOption((c) => a_kick_table(c))
         .addStringOption((c) => a_drop_type(c))
         .addStringOption((c) => a_cover_mode(c))
-        .setContexts(InteractionContextType.BotDM, InteractionContextType.Guild, InteractionContextType.PrivateChannel)
+        .setContexts(
+          InteractionContextType.BotDM,
+          InteractionContextType.Guild,
+          InteractionContextType.PrivateChannel
+        )
     );
   }
 
@@ -66,53 +73,61 @@ export class SetupCommand extends Command {
 
     if (color === "colored") {
       color = "I";
-      tetfu = this.recolor(tetfu, "IJOLZST", "I");
+      tetfu = this.recolor(tetfu, "TIJLOSZ", "I");
     }
 
     if (color === "all") {
       color = "I";
-      tetfu = this.recolor(tetfu, "IJOLZSTX", "I");
+      tetfu = this.recolor(tetfu, "TIJLOSZX", "I");
     }
 
     if (color === "garbage") {
       color = "I";
       // :stare:
-      tetfu = this.recolor(tetfu, "IJOLZST", "O");
+      tetfu = this.recolor(tetfu, "TIJLOSZ", "O");
       tetfu = this.recolor(tetfu, "X", "I");
       tetfu = this.recolor(tetfu, "O", "X");
     }
 
-    const command = `setup -t ${tetfu} -p ${pattern} -H ${hold} -K ${kicks} -d ${drop_type} -f ${color}`;
+    const s_command = `setup -t ${tetfu} -p ${pattern} -H ${hold} -K ${kicks} -d ${drop_type} -f ${color}`;
 
-    const result = sfinder(interaction, command);
+    const s_result = await sfinder(interaction, s_command);
 
-    if (result.ok) {
-      const t = p_setup(interaction);
-      if (!t) {
-        await interaction.editReply("Nothing was found.");
-        return;
-      }
-      if (t.startsWith("v115@")) {
-        const gf = t
-          .split(" ")
-          .flatMap((x) => glueFumen(x))
-          .join(" ");
-        const command = `cover -t ${gf} -p ${pattern} -H ${hold} -d ${drop_type} -K ${kicks}`;
-
-        const result = sfinder(interaction, command);
-
-        if (result.ok) {
-          const t = p_cover(interaction, cover_mode);
-          interaction.editReply(respond_lengthy("", t, false));
-        } else {
-          interaction.editReply(respond_lengthy(":warning:", result.text));
-        }
-      } else {
-        await interaction.editReply(respond_lengthy("", t, false));
-      }
-    } else {
-      await interaction.editReply(respond_lengthy(":warning:", result.text));
+    if (!s_result.ok) {
+      await interaction.editReply(respond_lengthy(":warning:", s_result.text));
+      await clean(interaction);
+      return;
     }
+
+    const s_t = await p_setup(interaction);
+    if (!s_t) {
+      await interaction.editReply("Nothing was found.");
+      return;
+    }
+
+    if (!s_t.startsWith("v115@")) {
+      await interaction.editReply(respond_lengthy("", s_t, false));
+      await clean(interaction);
+      return;
+    }
+
+    const gf = s_t
+      .split(" ")
+      .flatMap((x) => glueFumen(x))
+      .join(" ");
+    const c_command = `cover -t ${gf} -p ${pattern} -H ${hold} -d ${drop_type} -K ${kicks}`;
+
+    const c_result = await sfinder(interaction, c_command);
+
+    if (!c_result.ok) {
+      await interaction.editReply(respond_lengthy(":warning:", c_result.text));
+      await clean(interaction);
+      return;
+    }
+
+    const c_t = await p_cover(interaction, cover_mode);
+    await interaction.editReply(respond_lengthy("", c_t, false));
+    await clean(interaction);
   }
 
   public recolor(tetfu: string, from: string, to: string): string {
@@ -121,8 +136,6 @@ export class SetupCommand extends Command {
       "v115@" +
       encode(
         decode(tetfu).map((x) => {
-
-
           //   x.field.str(opts).replace(/./g, ($) => (from.includes($) ? to : $))
           // );
           x.field = Field.create(

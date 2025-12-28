@@ -9,6 +9,7 @@ import {
   ChatInputCommandInteraction,
   ContextMenuCommandInteraction,
   InteractionContextType,
+  Message,
 } from "discord.js";
 import { render } from "../util";
 
@@ -42,7 +43,7 @@ export class RenderCommand extends Command {
     context: ChatInputCommand.RunContext
   ): Promise<void> {
     const content = interaction.options.getString("fumen", true);
-    await render(content, interaction.reply.bind(interaction));
+    await render({content} as Message, interaction.reply.bind(interaction));
   }
 
   public override async contextMenuRun(
@@ -50,7 +51,7 @@ export class RenderCommand extends Command {
     context: ContextMenuCommand.RunContext
   ): Promise<void> {
     if (interaction.isMessageContextMenuCommand()) {
-      const content = interaction.targetMessage.content;
+      const content = interaction.targetMessage;
       await render(content, interaction.reply.bind(interaction));
     }
   }

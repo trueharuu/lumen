@@ -46,15 +46,15 @@ export class RenCommand extends Command {
       interaction.options.getString("drop_type", false) ?? "softdrop";
 
     const command = `ren -t ${tetfu} -p ${pattern} -H ${hold} -d ${drop_type} -K "${kicks}"`;
-    const result = sfinder(interaction, command);
+    const result = await sfinder(interaction, command);
 
     if (result.ok) {
-      const t = p_ren(interaction);
+      const t = await p_ren(interaction);
       await interaction.editReply(respond_lengthy("", t, false));
     } else {
       await interaction.editReply(respond_lengthy(":warning:", result.text));
     }
 
-    clean(interaction);
+    await clean(interaction);
   }
 }

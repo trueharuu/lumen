@@ -61,18 +61,18 @@ export class SetupCommand extends Command {
 
     if (color === "colored") {
       color = "I";
-      tetfu = this.recolor(tetfu, "IJOLZST", "I");
+      tetfu = this.recolor(tetfu, "TIJLOSZ", "I");
     }
 
     if (color === "all") {
       color = "I";
-      tetfu = this.recolor(tetfu, "IJOLZSTX", "I");
+      tetfu = this.recolor(tetfu, "TIJLOSZX", "I");
     }
 
     if (color === "garbage") {
       color = "I";
       // :stare:
-      tetfu = this.recolor(tetfu, "IJOLZST", "O");
+      tetfu = this.recolor(tetfu, "TIJLOSZ", "O");
       tetfu = this.recolor(tetfu, "X", "I");
       tetfu = this.recolor(tetfu, "O", "X");
     }
@@ -83,9 +83,9 @@ export class SetupCommand extends Command {
     for (const page of pages) {
       const tet = "v115@" + encode([page]);
       const command = `setup -t ${tet} -p ${pattern} -H ${hold} -K ${kicks} -d ${drop_type} -f ${color}`;
-      const result = sfinder(interaction, command);
+      const result = await sfinder(interaction, command);
       if (result.ok) {
-        const congruents = p_setup(interaction);
+        const congruents = await p_setup(interaction);
 
         if (congruents) {
           for (const congruent of decode(congruents)) {
@@ -94,11 +94,12 @@ export class SetupCommand extends Command {
         }
       } else {
         await interaction.editReply(respond_lengthy(":warning:", result.text));
+        await clean(interaction);
         return;
       }
     }
 
-    interaction.editReply(
+    await interaction.editReply(
       respond_lengthy(
         "",
         "v115@" +
@@ -111,6 +112,8 @@ export class SetupCommand extends Command {
         false
       )
     );
+
+    await clean(interaction);
   }
 
   public recolor(tetfu: string, from: string, to: string): string {
@@ -119,10 +122,6 @@ export class SetupCommand extends Command {
       "v115@" +
       encode(
         decode(tetfu).map((x) => {
-
-
-          //   x.field.str(opts).replace(/./g, ($) => (from.includes($) ? to : $))
-          // );
           x.field = Field.create(
             x.field.str(opts).replace(/./g, ($) => (from.includes($) ? to : $))
           );

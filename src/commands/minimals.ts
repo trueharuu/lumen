@@ -51,7 +51,7 @@ export class MinimalsCommand extends Command {
 
     const command = `path -t ${tetfu} -p ${pattern} -H ${hold} -d ${drop_type} -K "${kicks}" -c ${clear} -f csv -k pattern`;
 
-    const result = sfinder(interaction, command);
+    const result = await  sfinder(interaction, command);
 
     if (result.ok) {
       const t = await p_minimals(interaction);
@@ -60,7 +60,7 @@ export class MinimalsCommand extends Command {
       await interaction.editReply(respond_lengthy(":warning:", result.text));
     }
 
-    clean(interaction);
+    await clean(interaction);
 
     // clean(interaction.user.id, interaction.id);
 

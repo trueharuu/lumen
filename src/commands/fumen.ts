@@ -75,7 +75,7 @@ export class FumenCommand extends Command {
       await interaction.editReply(
         respond_lengthy("", glueFumen(tetfu).join("\n"), false),
       );
-      clean(interaction);
+      await clean(interaction);
       return;
     }
 
@@ -84,7 +84,7 @@ export class FumenCommand extends Command {
       await interaction.editReply(
         respond_lengthy("", assemble(tetfu.split(" ")).join("\n"), false),
       );
-      clean(interaction);
+      await clean(interaction);
       return;
     }
 
@@ -97,7 +97,7 @@ export class FumenCommand extends Command {
       await interaction.editReply(
         respond_lengthy("\u{E007E}", va.join("\n"), false),
       );
-      clean(interaction);
+      await clean(interaction);
       return;
     }
 

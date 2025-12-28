@@ -92,15 +92,15 @@ export class CoverCommand extends Command {
 
     const command = `cover -t ${gf} -p ${pattern} -H ${hold} -d ${drop_type} -K ${kicks} -m ${mirror ? "yes" : "no"} -M ${cover_mode} -mc ${clear} -ms ${max_sd} -P ${priority ? "yes" : "no"} -l ${last_sd} -sb ${starting_b2b}`;
 
-    const result = sfinder(interaction, command);
+    const result = await sfinder(interaction, command);
 
     if (result.ok) {
-      const t = p_cover(interaction, cover_mode);
+      const t = await p_cover(interaction, cover_mode);
       interaction.editReply(respond_lengthy("", t, false));
     } else {
       interaction.editReply(respond_lengthy(":warning:", result.text));
     }
 
-    clean(interaction);
+    await clean(interaction);
   }
 }
