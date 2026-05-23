@@ -4,7 +4,10 @@ import {
   ChatInputCommand,
   Command,
 } from "@sapphire/framework";
-import { ChatInputCommandInteraction, InteractionContextType } from "discord.js";
+import {
+  ChatInputCommandInteraction,
+  InteractionContextType,
+} from "discord.js";
 import { a_kick_table, a_tetfu, choice } from "../args";
 import { kick_table, lib_root, permutations, respond_lengthy } from "../util";
 import { decode } from "tetris-fumen/lib/decoder";
@@ -35,7 +38,7 @@ export class FinesseCommand extends Command {
   }
 
   public override async registerApplicationCommands(
-    registry: ApplicationCommandRegistry
+    registry: ApplicationCommandRegistry,
   ): Promise<void> {
     registry.registerChatInputCommand((b) =>
       b
@@ -47,7 +50,7 @@ export class FinesseCommand extends Command {
           c
             .setName("inputs")
             .setDescription("Maximum amount of inputs to consider (default 6)")
-            .setRequired(false)
+            .setRequired(false),
         )
         .addStringOption((c) =>
           c
@@ -57,23 +60,27 @@ export class FinesseCommand extends Command {
               choice("softdrop", "sf"),
               choice("softdrop + 180", "sf180"),
               choice("sonicdrop", "sd"),
-              choice("sonicdrop + 180", "sd180")
+              choice("sonicdrop + 180", "sd180"),
             )
-            .setRequired(false)
+            .setRequired(false),
         )
         .addIntegerOption((c) =>
           c
             .setName("height")
             .setDescription("The assumed height of the board.")
-            .setRequired(false)
+            .setRequired(false),
         )
-        .setContexts(InteractionContextType.BotDM, InteractionContextType.Guild, InteractionContextType.PrivateChannel)
+        .setContexts(
+          InteractionContextType.BotDM,
+          InteractionContextType.Guild,
+          InteractionContextType.PrivateChannel,
+        ),
     );
   }
 
   public override async chatInputRun(
     interaction: ChatInputCommandInteraction,
-    context: ChatInputCommand.RunContext
+    context: ChatInputCommand.RunContext,
   ): Promise<void> {
     await interaction.deferReply();
 
@@ -83,7 +90,6 @@ export class FinesseCommand extends Command {
     const inputs = interaction.options.getInteger("inputs", false) ?? 6;
     const style = interaction.options.getString("style", false) ?? "sf180";
     const ht = interaction.options.getInteger("height", false) ?? 20;
-
 
     const keyboard: Array<Key> = {
       sf: [
@@ -136,7 +142,7 @@ export class FinesseCommand extends Command {
 
     const kzt = kicktable(await fs.readFile(kicks, "utf-8"));
     const pzt = piecetable(
-      await fs.readFile(lib_root() + "/pieces/tetromino.piece", "utf-8")
+      await fs.readFile(lib_root() + "/pieces/tetromino.piece", "utf-8"),
     );
 
     const fum: EncodePage[] = [];
@@ -180,7 +186,7 @@ export class FinesseCommand extends Command {
               p!,
               kzt,
               pzt,
-              SpinBonuses.AllMiniImmobile
+              SpinBonuses.AllMiniImmobile,
             );
 
             for (const k of seq) {
@@ -189,7 +195,6 @@ export class FinesseCommand extends Command {
 
             const l = i.snapshot().placement;
             if (l.x === c.x && l.y === c.y && l.rotation === c.rotation) {
-
               lx = l.x;
               ly = l.y;
               lr = l.rotation;
@@ -204,19 +209,17 @@ export class FinesseCommand extends Command {
             shortest = t;
           }
         }
-
-
       }
 
       if (!shortest) {
         await interaction.editReply(
-          `Could not find any finesse for page ${ml}`
+          `Could not find any finesse for page ${ml}`,
         );
         return;
       }
 
       track.push(
-        `\`${p}(${lx}, ${ly}, ${lr})\`: ${shortest.map(say_key).join(", ")}`
+        `\`${p}(${lx}, ${ly}, ${lr})\`: ${shortest.map(say_key).join(", ")}`,
       );
 
       const i = new Input(
@@ -227,7 +230,7 @@ export class FinesseCommand extends Command {
         p!,
         kzt,
         pzt,
-        SpinBonuses.AllMiniImmobile
+        SpinBonuses.AllMiniImmobile,
       );
 
       const f = Field.create(clean.map((x) => x.join("")).join(""));
@@ -236,7 +239,7 @@ export class FinesseCommand extends Command {
         parsePiece(n.type),
         parseRotation(n.rotation),
         n.x,
-        n.y
+        n.y,
       )) {
         f.set(x, y, n.type);
       }
@@ -252,7 +255,7 @@ export class FinesseCommand extends Command {
           parsePiece(p.type),
           parseRotation(p.rotation),
           p.x,
-          p.y
+          p.y,
         )) {
           f.set(x, y, p.type);
         }
@@ -268,9 +271,9 @@ export class FinesseCommand extends Command {
     await interaction.editReply(
       respond_lengthy(
         "",
-        `[fumen](<https://fumen.zui.jp/${tet}>)\n${track.join("\n")}`,
-        false
-      )
+        `[fumen](<https://fumen.zui.jp/?${tet}>)\n${track.join("\n")}`,
+        false,
+      ),
     );
   }
 
@@ -279,7 +282,7 @@ export class FinesseCommand extends Command {
     height: number,
     clean: Array<Array<PieceType>>,
     kzt: Kick[],
-    pzt: PieceDef[]
+    pzt: PieceDef[],
   ): Array<Operation> {
     const colored: Array<[number, number, PieceType]> = [];
     for (let x = 0; x < 10; x++) {
@@ -297,8 +300,8 @@ export class FinesseCommand extends Command {
 
     const ops = colored.flatMap(([x, y, t]) =>
       (["spawn", "right", "reverse", "left"] as const).map(
-        (r) => ({ x, y, type: t, rotation: r }) satisfies Operation
-      )
+        (r) => ({ x, y, type: t, rotation: r }) satisfies Operation,
+      ),
     );
 
     return ops.filter((x) => {
@@ -306,7 +309,7 @@ export class FinesseCommand extends Command {
         parsePiece(x.type),
         parseRotation(x.rotation),
         x.x,
-        x.y
+        x.y,
       ).every((x) => colored.some(([dx, dy]) => x.x === dx && x.y === dy));
     });
   }
